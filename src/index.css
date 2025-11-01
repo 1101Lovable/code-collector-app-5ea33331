@@ -8,38 +8,38 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Modern silver/grey palette */
-    --background: 0 0% 96%;
-    --foreground: 0 0% 15%;
+    /* Bright metallic silver palette */
+    --background: 210 25% 97%;
+    --foreground: 215 20% 20%;
 
-    --card: 0 0% 98%;
-    --card-foreground: 0 0% 15%;
+    --card: 210 30% 99%;
+    --card-foreground: 215 20% 20%;
 
-    --popover: 0 0% 98%;
-    --popover-foreground: 0 0% 15%;
+    --popover: 210 30% 99%;
+    --popover-foreground: 215 20% 20%;
 
-    /* Sophisticated charcoal for primary actions */
-    --primary: 0 0% 25%;
+    /* Refined silver-grey for primary actions */
+    --primary: 215 15% 35%;
     --primary-foreground: 0 0% 100%;
 
-    /* Light silver for secondary actions */
-    --secondary: 0 0% 85%;
-    --secondary-foreground: 0 0% 15%;
+    /* Bright silver for secondary actions */
+    --secondary: 210 30% 92%;
+    --secondary-foreground: 215 20% 20%;
 
-    --muted: 0 0% 88%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 210 25% 94%;
+    --muted-foreground: 215 15% 50%;
 
-    /* Metallic silver accent */
-    --accent: 0 0% 70%;
-    --accent-foreground: 0 0% 15%;
+    /* Metallic silver accent with blue undertone */
+    --accent: 210 20% 75%;
+    --accent-foreground: 215 20% 20%;
 
     /* Clear destructive color */
     --destructive: 0 80% 50%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive-foreground: 210 30% 99%;
 
-    --border: 0 0% 82%;
-    --input: 0 0% 82%;
-    --ring: 0 0% 30%;
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 215 25% 40%;
 
     /* Large radius for senior-friendly UI */
     --radius: 1rem;
