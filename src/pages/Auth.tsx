@@ -113,7 +113,7 @@ export default function Auth() {
       <Card className="w-full max-w-md p-8 shadow-2xl border-2 backdrop-blur-sm bg-card/95">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <img src={heartIcon} alt="Heart" className="w-20 h-20 animate-fade-in" />
+            <img src={heartIcon} alt="Heart" className="w-32 h-32 animate-fade-in" />
           </div>
           <h1 className="text-senior-2xl mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             {isLogin ? "로그인" : "회원가입"}
