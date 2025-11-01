@@ -233,7 +233,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       {/* Form */}
       <div className="flex-1 px-6 pt-8 space-y-8">
         <div className="space-y-4">
-          <Label htmlFor="title" className="text-senior-xl font-bold">
+          <Label htmlFor="title" className="text-3xl font-bold">
             무엇을 하시나요?
           </Label>
           <Input
