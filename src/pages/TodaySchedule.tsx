@@ -75,6 +75,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   const navigate = useNavigate();
   const { user } = useAuth();
   const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [schedules, setSchedules] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -168,8 +169,49 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       }
     };
 
+    const fetchSchedules = async () => {
+      if (!user) return;
+
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const { data, error } = await supabase
+          .from("schedules")
+          .select("*")
+          .eq("schedule_date", today)
+          .order("schedule_time", { ascending: true });
+
+        if (error) throw error;
+
+        setSchedules(data || []);
+      } catch (error) {
+        console.error("일정을 가져오는데 실패했습니다:", error);
+      }
+    };
+
     fetchWeather();
     fetchRecommendations();
+    fetchSchedules();
+
+    // Realtime subscription for schedule updates
+    const channel = supabase
+      .channel('schedule-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'schedules',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchSchedules();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   const handleLogout = async () => {
@@ -182,14 +224,17 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
     }
   };
 
-  // Mock data
   const today = new Date();
-  const schedules = [
-    { id: 1, time: "오전 10:00", title: "복지관 방문", shared: false },
-    { id: 2, time: "오후 2:00", title: "손주 만나는 날", shared: true },
-  ];
-
   const [recommendations, setRecommendations] = useState<any[]>([]);
+
+  const formatTime = (time: string | null) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const period = hour < 12 ? "오전" : "오후";
+    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    return `${period} ${displayHour}:${minutes}`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
@@ -244,10 +289,14 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex justify-between items-center hover:shadow-md transition-all"
               >
                 <div>
-                  <p className="text-primary font-bold text-senior-lg">{schedule.time}</p>
+                  {schedule.schedule_time && (
+                    <p className="text-primary font-bold text-senior-lg">
+                      {formatTime(schedule.schedule_time)}
+                    </p>
+                  )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {schedule.shared && (
+                {schedule.shared_with_family && (
                   <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-senior-sm text-foreground flex-shrink-0 ml-4">
                     <Users size={14} /> 가족
                   </div>

@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useState } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AddScheduleProps {
   onBack: () => void;
@@ -13,23 +15,53 @@ interface AddScheduleProps {
 }
 
 export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps) {
+  const { user } = useAuth();
   const [shareWithFamily, setShareWithFamily] = useState(false);
   const [title, setTitle] = useState("");
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [time, setTime] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) {
       toast.error("일정 내용을 입력해주세요");
       return;
     }
 
-    toast.success("일정이 추가되었어요!", {
-      description: shareWithFamily ? "가족들에게도 알려드렸어요" : undefined,
-      duration: 3000,
-    });
+    if (!user) {
+      toast.error("로그인이 필요합니다");
+      return;
+    }
+
+    setIsSaving(true);
     
-    setTimeout(() => {
-      onBack();
-    }, 1000);
+    try {
+      const { error } = await supabase
+        .from("schedules")
+        .insert({
+          user_id: user.id,
+          title: title.trim(),
+          schedule_date: date,
+          schedule_time: time || null,
+          shared_with_family: shareWithFamily,
+        });
+
+      if (error) throw error;
+
+      toast.success("일정이 추가되었어요!", {
+        description: shareWithFamily ? "가족들에게도 알려드렸어요" : undefined,
+        duration: 3000,
+      });
+      
+      setTimeout(() => {
+        onBack();
+      }, 1000);
+    } catch (error) {
+      console.error("일정 저장 오류:", error);
+      toast.error("일정 저장에 실패했습니다");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -72,6 +104,8 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
             id="date"
             type="date"
             className="h-16 text-senior-base px-6 border-2"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
         </div>
 
@@ -83,6 +117,8 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
             id="time"
             type="time"
             className="h-16 text-senior-base px-6 border-2"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
           />
         </div>
 
@@ -126,8 +162,9 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
           size="xl"
           onClick={handleSave}
           className="w-full"
+          disabled={isSaving}
         >
-          일정 저장하기
+          {isSaving ? "저장 중..." : "일정 저장하기"}
         </Button>
       </div>
     </div>
