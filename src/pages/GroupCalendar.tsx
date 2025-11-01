@@ -64,6 +64,13 @@ export default function GroupCalendar() {
   useEffect(() => {
     if (selectedMember) {
       fetchMemberSchedules();
+      // Set today's date as default selection when entering member calendar
+      const today = new Date();
+      if (currentDate.getMonth() === today.getMonth() && currentDate.getFullYear() === today.getFullYear()) {
+        setSelectedDate(today.getDate());
+      } else {
+        setSelectedDate(1); // Select first day if not current month
+      }
     }
   }, [selectedMember, currentDate]);
 
