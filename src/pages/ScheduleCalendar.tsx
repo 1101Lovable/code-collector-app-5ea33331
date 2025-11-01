@@ -6,13 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { toLocalDateString } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import TimePicker from "@/components/TimePicker";
@@ -34,7 +28,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
   const [isAddingSchedule, setIsAddingSchedule] = useState(false);
   const [aiRecommendations, setAiRecommendations] = useState<string | null>(null);
   const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
-  const [parsedRecommendations, setParsedRecommendations] = useState<Array<{title: string, description: string}>>([]);
+  const [parsedRecommendations, setParsedRecommendations] = useState<Array<{ title: string; description: string }>>([]);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -131,7 +125,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
 
       const schedulesByDate: { [key: string]: any[] } = {};
       allSchedules.forEach((schedule) => {
-        const day = parseInt(schedule.schedule_date.split('-')[2], 10);
+        const day = parseInt(schedule.schedule_date.split("-")[2], 10);
         if (!schedulesByDate[day]) {
           schedulesByDate[day] = [];
         }
@@ -192,7 +186,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
             .from("schedules")
             .select("*")
             .in("user_id", familyUserIds)
-              .eq("schedule_date", dateStr)
+            .eq("schedule_date", dateStr)
             .not("family_id", "is", null)
             .order("start_time", { ascending: true });
 
@@ -213,7 +207,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
       const allSchedules = [...(ownSchedules || []), ...familySchedules].sort((a, b) => {
         const getTimeValue = (s: any) => {
           if (s.schedule_time) {
-            const [h, m] = s.schedule_time.split(':');
+            const [h, m] = s.schedule_time.split(":");
             return parseInt(h) * 60 + parseInt(m);
           }
           if (s.start_time) {
@@ -232,40 +226,37 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
   };
 
   const fetchAIRecommendation = async () => {
-    if (!user?.user_metadata?.location_district || !user?.id) return;
+    if (!user?.user_metadata?.location_district) return;
 
     setIsLoadingRecommendation(true);
     try {
-      const { data, error } = await supabase.functions.invoke('get-activity-recommendations', {
-        body: { 
-          district: user.user_metadata.location_district,
-          userId: user.id
-        }
+      const { data, error } = await supabase.functions.invoke("get-activity-recommendations", {
+        body: { district: user.user_metadata.location_district },
       });
 
       if (error) throw error;
-      
+
       setAiRecommendations(data.recommendation);
-      
+
       // Parse the recommendation text to extract individual activities
-      const lines = data.recommendation.split('\n');
-      const activities: Array<{title: string, description: string}> = [];
-      
+      const lines = data.recommendation.split("\n");
+      const activities: Array<{ title: string; description: string }> = [];
+
       for (const line of lines) {
         // Match pattern like "1. **활동명**: 설명"
         const match = line.match(/^\d+\.\s+\*\*(.+?)\*\*:\s+(.+)$/);
         if (match) {
           activities.push({
             title: match[1].trim(),
-            description: match[2].trim()
+            description: match[2].trim(),
           });
         }
       }
-      
+
       setParsedRecommendations(activities);
     } catch (error: any) {
-      console.error('추천을 가져오는데 실패했습니다:', error);
-      toast.error('추천을 가져오는데 실패했습니다');
+      console.error("추천을 가져오는데 실패했습니다:", error);
+      toast.error("추천을 가져오는데 실패했습니다");
     } finally {
       setIsLoadingRecommendation(false);
     }
@@ -291,11 +282,11 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
 
     // Validate time range if both times are provided
     if (addScheduleTime && addScheduleEndTime) {
-      const [startH, startM] = addScheduleTime.split(':').map(Number);
-      const [endH, endM] = addScheduleEndTime.split(':').map(Number);
+      const [startH, startM] = addScheduleTime.split(":").map(Number);
+      const [endH, endM] = addScheduleEndTime.split(":").map(Number);
       const startMinutes = startH * 60 + startM;
       const endMinutes = endH * 60 + endM;
-      
+
       if (endMinutes <= startMinutes) {
         toast.error("종료 시간은 시작 시간보다 늦어야 합니다");
         return;
@@ -306,9 +297,13 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
     try {
       const cleanTime = addScheduleTime ? addScheduleTime.split(":").slice(0, 2).join(":") : null;
       const cleanEndTime = addScheduleEndTime ? addScheduleEndTime.split(":").slice(0, 2).join(":") : null;
-      
+
       const startTime = cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T00:00:00`;
-      const endTime = cleanEndTime ? `${addScheduleDate}T${cleanEndTime}:00` : (cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T23:59:59`);
+      const endTime = cleanEndTime
+        ? `${addScheduleDate}T${cleanEndTime}:00`
+        : cleanTime
+          ? `${addScheduleDate}T${cleanTime}:00`
+          : `${addScheduleDate}T23:59:59`;
 
       const scheduleData: any = {
         user_id: user.id,
@@ -392,7 +387,8 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
     return `${period} ${displayHour}:${m}`;
   };
 
-  const getDisplayTime = (s: any) => (s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time));
+  const getDisplayTime = (s: any) =>
+    s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time);
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
       {/* Month Navigator */}
@@ -524,14 +520,10 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
             ))}
           </div>
         )}
-        
+
         {/* Add Schedule Button */}
         <div className="mt-6">
-          <Button 
-            size="xl" 
-            onClick={onAddSchedule}
-            className="w-full h-16 text-senior-xl font-bold text-primary-foreground"
-          >
+          <Button size="xl" onClick={onAddSchedule} className="w-full h-16 text-2xl font-bold">
             일정 추가
           </Button>
         </div>
@@ -559,7 +551,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
                     setSelectedRecommendation({
                       title: rec.title,
                       description: rec.description,
-                      type: 'ai'
+                      type: "ai",
                     });
                     setAddScheduleDate(toLocalDateString(new Date()));
                     setAddScheduleTime("");
@@ -579,7 +571,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
                         setSelectedRecommendation({
                           title: rec.title,
                           description: rec.description,
-                          type: 'ai'
+                          type: "ai",
                         });
                         setAddScheduleDate(toLocalDateString(new Date()));
                         setAddScheduleTime("");
@@ -590,11 +582,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
                   </div>
                 </Card>
               ))}
-              <Button
-                onClick={fetchAIRecommendation}
-                variant="outline"
-                className="w-full mt-4"
-              >
+              <Button onClick={fetchAIRecommendation} variant="outline" className="w-full mt-4">
                 다른 추천 보기
               </Button>
             </div>
@@ -603,7 +591,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
               <p className="text-senior-base text-muted-foreground mb-4">
                 오늘 하루를 즐겁게 보낼 수 있는 활동을 추천해드릴게요
               </p>
-              <Button onClick={fetchAIRecommendation} variant="default" className="text-primary-foreground">
+              <Button onClick={fetchAIRecommendation} variant="default">
                 추천 받기
               </Button>
             </div>
@@ -612,10 +600,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
       </section>
 
       {/* Add to Schedule Dialog */}
-      <Dialog
-        open={!!selectedRecommendation}
-        onOpenChange={(open) => !open && setSelectedRecommendation(null)}
-      >
+      <Dialog open={!!selectedRecommendation} onOpenChange={(open) => !open && setSelectedRecommendation(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-senior-xl">일정 추가</DialogTitle>
