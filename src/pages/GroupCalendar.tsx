@@ -28,6 +28,7 @@ export default function GroupCalendar() {
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [monthSchedules, setMonthSchedules] = useState<{ [key: string]: any[] }>({});
+  const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -155,12 +156,23 @@ export default function GroupCalendar() {
     }
   };
 
+  const formatTime = (time: string | null) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":");
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? "오후" : "오전";
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    return `${ampm} ${displayHour}:${minutes}`;
+  };
+
   const prevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+    setSelectedDate(null);
   };
 
   const nextMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+    setSelectedDate(null);
   };
 
   const selectedMemberData = familyMembers.find((m) => m.user_id === selectedMember);
@@ -182,6 +194,7 @@ export default function GroupCalendar() {
               onClick={() => {
                 setSelectedMember(null);
                 setMonthSchedules({});
+                setSelectedDate(null);
               }}
             >
               <ArrowLeft size={24} />
@@ -246,32 +259,71 @@ export default function GroupCalendar() {
                   day === new Date().getDate() &&
                   currentDate.getMonth() === new Date().getMonth() &&
                   currentDate.getFullYear() === new Date().getFullYear();
+                const isSelected = selectedDate === day;
 
                 return (
-                  <div
+                  <button
                     key={day}
-                    className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all ${
-                      isToday
+                    onClick={() => setSelectedDate(day)}
+                    className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-primary border-primary text-primary-foreground font-bold"
+                        : isToday
                         ? "bg-accent border-accent text-accent-foreground font-bold"
-                        : "border-border"
+                        : "border-border hover:border-primary/50"
                     }`}
                   >
                     <span className="text-senior-sm mb-1">{day}</span>
                     
                     {hasSchedule && (
-                      <div className="w-2 h-2 rounded-full bg-primary" />
+                      <div className={`w-2 h-2 rounded-full ${
+                        isSelected ? "bg-primary-foreground" : "bg-primary"
+                      }`} />
                     )}
-                  </div>
+                  </button>
                 );
               })}
             </div>
           </Card>
 
-          <div className="mt-4 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
-            <p className="text-senior-sm text-center">
-              💚 가족과 공유된 일정만 표시됩니다
-            </p>
-          </div>
+          {selectedDate && monthSchedules[selectedDate] && monthSchedules[selectedDate].length > 0 ? (
+            <div className="mt-4 space-y-3">
+              <h3 className="text-senior-lg font-bold">
+                {currentDate.getMonth() + 1}월 {selectedDate}일 일정
+              </h3>
+              {monthSchedules[selectedDate].map((schedule) => (
+                <Card key={schedule.id} className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h4 className="text-senior-base font-semibold flex-1">
+                      {schedule.title}
+                    </h4>
+                    {schedule.schedule_time && (
+                      <span className="text-senior-sm text-muted-foreground flex-shrink-0 ml-2">
+                        {formatTime(schedule.schedule_time)}
+                      </span>
+                    )}
+                  </div>
+                  {schedule.description && (
+                    <p className="text-senior-sm text-muted-foreground">
+                      {schedule.description}
+                    </p>
+                  )}
+                </Card>
+              ))}
+            </div>
+          ) : selectedDate ? (
+            <div className="mt-4 bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50">
+              <p className="text-senior-base text-muted-foreground">
+                {currentDate.getMonth() + 1}월 {selectedDate}일에 일정이 없습니다
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
+              <p className="text-senior-sm text-center">
+                💚 가족과 공유된 일정만 표시됩니다
+              </p>
+            </div>
+          )}
         </div>
       </div>
     );
