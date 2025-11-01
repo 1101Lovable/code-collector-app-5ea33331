@@ -58,16 +58,18 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
       if (profileError) throw profileError;
 
       // Combine member data with profiles
-      const membersWithProfiles = memberData.map((member) => {
-        const profile = profiles?.find((p) => p.id === member.user_id);
-        return {
-          id: member.id,
-          user_id: member.user_id,
-          display_name: profile?.display_name || "Unknown",
-          avatar_url: profile?.avatar_url || null,
-          is_head: member.is_head,
-        };
-      });
+      const membersWithProfiles = memberData
+        .filter((member) => member.user_id !== user?.id) // 자신은 제외
+        .map((member) => {
+          const profile = profiles?.find((p) => p.id === member.user_id);
+          return {
+            id: member.id,
+            user_id: member.user_id,
+            display_name: profile?.display_name || "Unknown",
+            avatar_url: profile?.avatar_url || null,
+            is_head: member.is_head,
+          };
+        });
 
       setMembers(membersWithProfiles);
     } catch (error: any) {
@@ -143,13 +145,8 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-senior-lg font-semibold">
-                          {member.display_name}
+                         {member.display_name}
                         </h3>
-                        {member.user_id === user?.id && (
-                          <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                            나
-                          </span>
-                        )}
                       </div>
                       {member.is_head && (
                         <div className="flex items-center gap-1 text-accent">
@@ -160,7 +157,7 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
                     </div>
                   </div>
 
-                  {isUserHead && member.user_id !== user?.id && (
+                  {isUserHead && (
                     <Button
                       variant={member.is_head ? "outline" : "default"}
                       size="sm"

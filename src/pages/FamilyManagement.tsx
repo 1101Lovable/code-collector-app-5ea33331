@@ -73,16 +73,20 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
       // Get member count for each group
       const groupsWithCount = await Promise.all(
         (groups || []).map(async (group) => {
-          const { count } = await supabase
+          const { data: members, error: countError } = await supabase
             .from("family_members")
-            .select("*", { count: "exact", head: true })
+            .select("id")
             .eq("family_group_id", group.id);
+
+          if (countError) {
+            console.error("Error counting members:", countError);
+          }
 
           const membership = memberships.find((m) => m.family_group_id === group.id);
 
           return {
             ...group,
-            member_count: count || 0,
+            member_count: members?.length || 0,
             is_head: membership?.is_head || false,
           };
         }),
@@ -171,7 +175,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
         .select("*")
         .eq("family_group_id", group.id)
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
       if (existingMember) {
         toast.error("이미 참여한 그룹입니다");
