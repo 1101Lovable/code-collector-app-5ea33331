@@ -468,7 +468,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {schedule.user_id !== userId && schedule.group_name && (
+                {user && schedule.user_id !== user.id && schedule.group_name && (
                   <div className="flex items-center gap-1 bg-accent/10 px-3 py-1 rounded-full text-senior-sm text-accent-foreground flex-shrink-0 ml-4">
                     <Users size={14} /> {schedule.group_name}
                   </div>
