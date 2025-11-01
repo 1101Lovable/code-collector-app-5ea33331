@@ -94,7 +94,7 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
     if (!mood) return null;
     const moods: { [key: string]: string } = {
       good: "😊",
-      okay: "😐",
+      okay: "😑",
       bad: "😡",
     };
     return moods[mood] || null;
