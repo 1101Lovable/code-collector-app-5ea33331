@@ -151,52 +151,36 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
     setIsJoining(true);
     try {
-      // Find group by invite code
-      const { data: group, error: groupError } = await supabase
-        .from("family_groups")
-        .select("*")
-        .eq("invite_code", inviteCode.trim())
-        .maybeSingle();
-
-      if (groupError) {
-        console.error("Error finding group:", groupError);
-        toast.error("그룹 조회 중 오류가 발생했습니다");
-        return;
-      }
-
-      if (!group) {
-        toast.error("유효하지 않은 초대 코드입니다");
-        return;
-      }
-
-      // Check if already a member
-      const { data: existingMember } = await supabase
-        .from("family_members")
-        .select("*")
-        .eq("family_group_id", group.id)
-        .eq("user_id", user.id)
-        .maybeSingle();
-
-      if (existingMember) {
-        toast.error("이미 참여한 그룹입니다");
-        return;
-      }
-
-      // Add as member
-      const { error: memberError } = await supabase.from("family_members").insert({
-        family_group_id: group.id,
-        user_id: user.id,
+      const { data, error } = await supabase.rpc('join_family_by_invite', {
+        p_invite_code: inviteCode.trim(),
       });
 
-      if (memberError) throw memberError;
+      if (error) {
+        console.error('join_family_by_invite error:', error);
+        const msg = (error as any).message || '';
+        if (msg.includes('INVALID_INVITE_CODE')) {
+          toast.error('유효하지 않은 초대 코드입니다');
+        } else if (msg.includes('ALREADY_MEMBER')) {
+          toast.error('이미 참여한 그룹입니다');
+        } else {
+          toast.error('그룹 참여 중 오류가 발생했습니다');
+        }
+        return;
+      }
 
-      toast.success(`"${group.name}" 그룹에 참여했습니다!`);
-      setInviteCode("");
+      const group = Array.isArray(data) ? data[0] : data;
+      if (!group) {
+        toast.error('그룹 정보를 불러오지 못했습니다');
+        return;
+      }
+
+      toast.success(`"${group.group_name}" 그룹에 참여했습니다!`);
+      setInviteCode('');
       setJoinDialogOpen(false);
       fetchMyGroups();
     } catch (error: any) {
-      console.error("Error joining group:", error);
-      toast.error("그룹 참여에 실패했습니다");
+      console.error('Error joining group:', error);
+      toast.error('그룹 참여에 실패했습니다');
     } finally {
       setIsJoining(false);
     }
