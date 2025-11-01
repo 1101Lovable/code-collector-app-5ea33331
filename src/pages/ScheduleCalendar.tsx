@@ -94,15 +94,16 @@ export default function ScheduleCalendar() {
             .in("id", familyUserIds);
           
           // Get shared schedules from family members
-          const scheduleQuery = await supabase
+          const scheduleQuery = supabase
             .from("schedules")
             .select("*")
             .in("user_id", familyUserIds)
-            .eq("shared_with_family", true)
+            .not("family_id", "is", null)
             .gte("schedule_date", startDate)
             .lte("schedule_date", endDate);
           
-          const { data: sharedSchedules } = scheduleQuery as { data: any[] | null; error: any };
+          const result: any = await scheduleQuery;
+          const sharedSchedules = result.data;
 
           // Add display names to family schedules
           familySchedules = (sharedSchedules || []).map(schedule => {
@@ -177,13 +178,16 @@ export default function ScheduleCalendar() {
             .in("id", familyUserIds);
           
           // Get shared schedules from family members
-          const { data: sharedSchedules } = await supabase
+          const scheduleQuery2 = supabase
             .from("schedules")
             .select("*")
             .in("user_id", familyUserIds)
             .eq("schedule_date", dateStr)
-            .eq("shared_with_family", true)
-            .order("schedule_time", { ascending: true });
+            .not("family_id", "is", null)
+            .order("start_time", { ascending: true });
+          
+          const result2: any = await scheduleQuery2;
+          const sharedSchedules = result2.data;
 
           // Add display names to family schedules
           familySchedules = (sharedSchedules || []).map(schedule => {
@@ -387,7 +391,7 @@ export default function ScheduleCalendar() {
                     </p>
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
-                  {schedule.shared_with_family && schedule.user_id !== user?.id && (
+                  {schedule.family_id && schedule.user_id !== user?.id && (
                     <div className="flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-full text-senior-xs text-accent-foreground mt-2 inline-flex">
                       <Users size={12} /> {schedule.owner_name}님
                     </div>

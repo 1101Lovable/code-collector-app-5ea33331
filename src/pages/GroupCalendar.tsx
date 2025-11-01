@@ -188,13 +188,16 @@ export default function GroupCalendar() {
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
       const endDate = `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
 
-      const { data, error } = (await supabase
+      const scheduleQuery = supabase
         .from("schedules")
         .select("*")
         .eq("user_id", selectedMember)
-        .eq("shared_with_family", true)
+        .not("family_id", "is", null)
         .gte("schedule_date", startDate)
-        .lte("schedule_date", endDate)) as { data: any[] | null; error: any };
+        .lte("schedule_date", endDate);
+      
+      const result: any = await scheduleQuery;
+      const { data, error } = result;
 
       if (error) throw error;
 

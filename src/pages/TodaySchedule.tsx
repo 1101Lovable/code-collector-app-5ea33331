@@ -213,13 +213,16 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               .in("id", familyUserIds);
             
             // Get shared schedules from family members
-            const { data: sharedSchedules } = await supabase
+            const scheduleQuery3 = supabase
               .from("schedules")
               .select("*")
               .in("user_id", familyUserIds)
               .eq("schedule_date", today)
-              .eq("shared_with_family", true)
-              .order("schedule_time", { ascending: true });
+              .not("family_id", "is", null)
+              .order("start_time", { ascending: true });
+            
+            const result3: any = await scheduleQuery3;
+            const sharedSchedules = result3.data;
 
             // Add display names to family schedules
             familySchedules = (sharedSchedules || []).map(schedule => {
@@ -353,7 +356,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {schedule.shared_with_family && schedule.user_id !== userId && (
+                {schedule.family_id && schedule.user_id !== userId && (
                   <div className="flex items-center gap-1 bg-accent/10 px-3 py-1 rounded-full text-senior-sm text-accent-foreground flex-shrink-0 ml-4">
                     <Users size={14} /> {schedule.owner_name}님
                   </div>

@@ -249,7 +249,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {schedule.shared_with_family && schedule.user_id !== user?.id && (
+                {schedule.family_id && schedule.user_id !== user?.id && (
                   <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-senior-sm text-foreground flex-shrink-0 ml-4">
                     <Users size={14} /> 가족
                   </div>

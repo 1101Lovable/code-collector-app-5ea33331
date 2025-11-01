@@ -48,7 +48,7 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
           schedule_date: date,
           start_time: startTime,
           end_time: endTime,
-          family_id: shareWithFamily ? null : null, // Will be set later when family feature is implemented
+          family_id: shareWithFamily ? user.id : null, // Temporary: use actual family group ID
         });
 
       if (error) throw error;
