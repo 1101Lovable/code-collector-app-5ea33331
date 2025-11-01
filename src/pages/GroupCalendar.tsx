@@ -201,7 +201,7 @@ export default function GroupCalendar() {
 
       const schedulesByDate: { [key: string]: any[] } = {};
       data?.forEach((schedule) => {
-        const day = parseInt(schedule.schedule_date.split('-')[2], 10);
+        const day = parseInt(schedule.schedule_date.split("-")[2], 10);
         if (!schedulesByDate[day]) {
           schedulesByDate[day] = [];
         }
@@ -233,7 +233,8 @@ export default function GroupCalendar() {
     return `${ampm} ${displayHour}:${m}`;
   };
 
-  const getDisplayTime = (s: any) => (s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time));
+  const getDisplayTime = (s: any) =>
+    s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time);
   const getMoodEmoji = (mood: string | null) => {
     if (!mood) return null;
     const moodData = moods.find((m) => m.id === mood);
@@ -494,7 +495,6 @@ export default function GroupCalendar() {
                     <h3 className="text-senior-xl font-bold mb-1">{group.name}</h3>
                     <p className="text-senior-sm text-muted-foreground">구성원 {group.member_count}명</p>
                   </div>
-                  <div className="text-4xl">👨‍👩‍👧‍👦</div>
                 </div>
               </Card>
             ))}
