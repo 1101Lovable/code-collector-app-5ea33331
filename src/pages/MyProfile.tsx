@@ -7,7 +7,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogOut, MapPin, Phone, Edit2, Save } from "lucide-react";
+import { LogOut, MapPin, Phone, Edit2, Save, UserX } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 // Format phone number for display
@@ -34,6 +44,8 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<Profile | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -111,6 +123,44 @@ export default function MyProfile() {
   const handleCancel = () => {
     setEditedProfile(profile);
     setIsEditing(false);
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    setIsDeleting(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        toast.error("로그인이 필요합니다");
+        return;
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-user-account`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || '회원 탈퇴에 실패했습니다');
+      }
+
+      toast.success("회원 탈퇴가 완료되었습니다");
+      await signOut();
+    } catch (error: any) {
+      console.error("Error deleting account:", error);
+      toast.error(error.message || "회원 탈퇴 중 오류가 발생했습니다");
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+    }
   };
 
   if (loading) {
@@ -241,12 +291,43 @@ export default function MyProfile() {
           onClick={signOut}
           variant="ghost"
           size="lg"
-          className="w-full text-primary hover:text-primary hover:bg-primary/10"
+          className="w-full text-primary hover:text-primary hover:bg-primary/10 mb-4"
         >
           <LogOut className="mr-2" />
           로그아웃
         </Button>
+
+        <Button
+          onClick={() => setDeleteDialogOpen(true)}
+          variant="ghost"
+          size="lg"
+          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+        >
+          <UserX className="mr-2" />
+          회원 탈퇴
+        </Button>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-senior-xl">회원 탈퇴</AlertDialogTitle>
+            <AlertDialogDescription className="text-senior-base">
+              정말로 회원 탈퇴를 하시겠습니까? 모든 데이터가 삭제되며 이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-senior-base">취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteAccount}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "탈퇴 중..." : "회원 탈퇴"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
