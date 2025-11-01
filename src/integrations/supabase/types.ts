@@ -145,6 +145,8 @@ export type Database = {
           created_at: string | null
           created_by: string
           id: string
+          invite_code: string | null
+          leader_who: string | null
           name: string
           updated_at: string | null
         }
@@ -152,6 +154,8 @@ export type Database = {
           created_at?: string | null
           created_by: string
           id?: string
+          invite_code?: string | null
+          leader_who?: string | null
           name: string
           updated_at?: string | null
         }
@@ -159,6 +163,8 @@ export type Database = {
           created_at?: string | null
           created_by?: string
           id?: string
+          invite_code?: string | null
+          leader_who?: string | null
           name?: string
           updated_at?: string | null
         }
@@ -166,6 +172,13 @@ export type Database = {
           {
             foreignKeyName: "family_groups_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "family_groups_leader_who_fkey"
+            columns: ["leader_who"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -255,6 +268,8 @@ export type Database = {
           location_city: string | null
           location_district: string | null
           location_dong: string | null
+          mood: string | null
+          mood_updated_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -265,6 +280,8 @@ export type Database = {
           location_city?: string | null
           location_district?: string | null
           location_dong?: string | null
+          mood?: string | null
+          mood_updated_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -275,6 +292,8 @@ export type Database = {
           location_city?: string | null
           location_district?: string | null
           location_dong?: string | null
+          mood?: string | null
+          mood_updated_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -285,10 +304,13 @@ export type Database = {
           description: string | null
           end_time: string
           event_type: string | null
+          family_group_id: string | null
           family_id: string | null
           id: string
           location: string | null
           schedule_date: string
+          schedule_time: string | null
+          shared_with_family: boolean | null
           start_time: string
           title: string
           updated_at: string | null
@@ -299,10 +321,13 @@ export type Database = {
           description?: string | null
           end_time: string
           event_type?: string | null
+          family_group_id?: string | null
           family_id?: string | null
           id?: string
           location?: string | null
           schedule_date: string
+          schedule_time?: string | null
+          shared_with_family?: boolean | null
           start_time: string
           title: string
           updated_at?: string | null
@@ -313,16 +338,26 @@ export type Database = {
           description?: string | null
           end_time?: string
           event_type?: string | null
+          family_group_id?: string | null
           family_id?: string | null
           id?: string
           location?: string | null
           schedule_date?: string
+          schedule_time?: string | null
+          shared_with_family?: boolean | null
           start_time?: string
           title?: string
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "schedules_family_group_id_fkey"
+            columns: ["family_group_id"]
+            isOneToOne: false
+            referencedRelation: "family_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "schedules_family_id_fkey"
             columns: ["family_id"]
@@ -344,7 +379,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_invite_code: { Args: never; Returns: string }
     }
     Enums: {
       [_ in never]: never
