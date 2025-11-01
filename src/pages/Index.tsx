@@ -7,15 +7,16 @@ import FamilyManagement from "./FamilyManagement";
 import FamilyNews from "./FamilyNews";
 import AddSchedule from "./AddSchedule";
 import CalendarView from "./CalendarView";
+import MyProfile from "./MyProfile";
 import BottomTabBar from "@/components/BottomTabBar";
 import { useAuth } from "@/contexts/AuthContext";
 
-type View = "home" | "schedule" | "group" | "family-management" | "family" | "add-schedule" | "calendar";
+type View = "home" | "schedule" | "group" | "profile" | "family-management" | "family" | "add-schedule" | "calendar";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"home" | "schedule" | "group">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "schedule" | "group" | "profile">("home");
   const [currentView, setCurrentView] = useState<View>("home");
 
   useEffect(() => {
@@ -51,7 +52,7 @@ const Index = () => {
     setActiveTab("home");
   };
 
-  const handleTabChange = (tab: "home" | "schedule" | "group") => {
+  const handleTabChange = (tab: "home" | "schedule" | "group" | "profile") => {
     setActiveTab(tab);
     setCurrentView(tab);
   };
@@ -79,7 +80,9 @@ const Index = () => {
         <CalendarView onBack={() => setCurrentView("add-schedule")} />
       )}
 
-      {(currentView === "home" || currentView === "schedule" || currentView === "group") && (
+      {currentView === "profile" && <MyProfile />}
+
+      {(currentView === "home" || currentView === "schedule" || currentView === "group" || currentView === "profile") && (
         <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
       )}
     </div>

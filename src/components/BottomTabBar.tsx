@@ -1,8 +1,8 @@
-import { Home, Calendar, Users } from "lucide-react";
+import { Home, Calendar, Users, User } from "lucide-react";
 
 interface BottomTabBarProps {
-  activeTab: "home" | "schedule" | "group";
-  onTabChange: (tab: "home" | "schedule" | "group") => void;
+  activeTab: "home" | "schedule" | "group" | "profile";
+  onTabChange: (tab: "home" | "schedule" | "group" | "profile") => void;
 }
 
 export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
@@ -37,6 +37,16 @@ export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarPro
         >
           <Users size={20} />
           <span className="text-senior-xs">그룹</span>
+        </button>
+
+        <button
+          onClick={() => onTabChange("profile")}
+          className={`flex flex-col items-center justify-center gap-1 px-6 py-2 transition-all ${
+            activeTab === "profile" ? "text-primary scale-105" : "text-muted-foreground hover:text-primary/70"
+          }`}
+        >
+          <User size={20} />
+          <span className="text-senior-xs">내 정보</span>
         </button>
       </div>
     </nav>
