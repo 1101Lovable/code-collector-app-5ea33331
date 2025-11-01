@@ -78,7 +78,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
 
         if (data.current_weather) {
           setWeather({
-            temperature: Math.round(data.current_weather.temperature),
+            temperature: data.current_weather.temperature,
             weathercode: data.current_weather.weathercode,
           });
         }
