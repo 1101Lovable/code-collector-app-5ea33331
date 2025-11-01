@@ -215,9 +215,9 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
         <h1 className="text-senior-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
         </h1>
-        {user?.user_metadata?.location_district && (
+        {user?.user_metadata?.location_city && (
           <p className="text-senior-base text-foreground mt-2">
-            서울특별시 {user.user_metadata.location_district}
+            {user.user_metadata.location_city} {user.user_metadata.location_district}
           </p>
         )}
       </div>
