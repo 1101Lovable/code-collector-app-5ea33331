@@ -168,18 +168,21 @@ export type Database = {
         Row: {
           family_group_id: string
           id: string
+          is_head: boolean | null
           joined_at: string
           user_id: string
         }
         Insert: {
           family_group_id: string
           id?: string
+          is_head?: boolean | null
           joined_at?: string
           user_id: string
         }
         Update: {
           family_group_id?: string
           id?: string
+          is_head?: boolean | null
           joined_at?: string
           user_id?: string
         }
