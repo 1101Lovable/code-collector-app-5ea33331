@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import TimePicker from "@/components/TimePicker";
 interface TodayScheduleProps {
   onAddSchedule: () => void;
   userId: string;
@@ -591,15 +591,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               <Label htmlFor="schedule-time" className="text-senior-2xl font-bold">
                 시간 {!isEventWithFixedTime() && "(선택)"}
               </Label>
-              <Input
-                id="schedule-time"
-                type="time"
-                step="600"
-                className="h-24 text-senior-2xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                value={addScheduleTime}
-                onChange={(e) => setAddScheduleTime(e.target.value)}
-                disabled={isEventWithFixedTime()}
-              />
+              <TimePicker value={addScheduleTime} onChange={setAddScheduleTime} disabled={isEventWithFixedTime()} />
             </div>
             <Button
               size="xl"

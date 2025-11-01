@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toLocalDateString } from "@/lib/utils";
-
+import TimePicker from "@/components/TimePicker";
 interface FamilyGroup {
   id: string;
   name: string;
@@ -242,14 +242,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
           <Label htmlFor="time" className="text-senior-2xl font-bold">
             몇 시에 하시나요?
           </Label>
-          <Input
-            id="time"
-            type="time"
-            step="600"
-            className="h-24 text-senior-2xl px-6 border-2 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-          />
+          <TimePicker value={time} onChange={setTime} />
         </div>
 
         {/* Family Sharing Toggle */}

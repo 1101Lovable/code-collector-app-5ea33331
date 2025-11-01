@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import TimePicker from "@/components/TimePicker";
 interface ScheduleCalendarProps {
   onEditSchedule?: (schedule: any) => void;
   onAddSchedule?: () => void;
@@ -620,14 +620,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
               <Label htmlFor="schedule-time" className="text-senior-2xl font-bold">
                 시간 (선택)
               </Label>
-              <Input
-                id="schedule-time"
-                type="time"
-                step="600"
-                className="h-24 text-senior-2xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
-                value={addScheduleTime}
-                onChange={(e) => setAddScheduleTime(e.target.value)}
-              />
+              <TimePicker value={addScheduleTime} onChange={setAddScheduleTime} />
             </div>
             <Button
               size="xl"
