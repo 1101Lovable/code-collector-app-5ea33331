@@ -226,12 +226,15 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
   };
 
   const fetchAIRecommendation = async () => {
-    if (!user?.user_metadata?.location_district) return;
+    if (!user?.user_metadata?.location_district || !user?.id) return;
 
     setIsLoadingRecommendation(true);
     try {
       const { data, error } = await supabase.functions.invoke("get-activity-recommendations", {
-        body: { district: user.user_metadata.location_district },
+        body: {
+          district: user.user_metadata.location_district,
+          userId: user.id,
+        },
       });
 
       if (error) throw error;
@@ -523,7 +526,11 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
 
         {/* Add Schedule Button */}
         <div className="mt-6">
-          <Button size="xl" onClick={onAddSchedule} className="w-full h-16 text-2xl font-bold">
+          <Button
+            size="xl"
+            onClick={onAddSchedule}
+            className="w-full h-16 text-senior-2xl font-bold text-primary-foreground"
+          >
             일정 추가
           </Button>
         </div>
@@ -591,7 +598,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
               <p className="text-senior-base text-muted-foreground mb-4">
                 오늘 하루를 즐겁게 보낼 수 있는 활동을 추천해드릴게요
               </p>
-              <Button onClick={fetchAIRecommendation} variant="default">
+              <Button onClick={fetchAIRecommendation} variant="default" className="text-primary-foreground">
                 추천 받기
               </Button>
             </div>
