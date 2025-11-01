@@ -53,6 +53,8 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
   const [currentMood, setCurrentMood] = useState<string | null>(null);
   const [isRecordingMood, setIsRecordingMood] = useState(false);
   const [isMoodSectionCollapsed, setIsMoodSectionCollapsed] = useState(false);
+  const [recommendation, setRecommendation] = useState<string | null>(null);
+  const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -118,6 +120,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     fetchWeather();
     fetchSchedules();
     fetchCurrentMood();
+    fetchRecommendation();
 
     const channel = supabase
       .channel("schedule-changes")
@@ -188,6 +191,25 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     }
   };
 
+  const fetchRecommendation = async () => {
+    if (!user?.user_metadata?.location_district) return;
+
+    setIsLoadingRecommendation(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-activity-recommendations', {
+        body: { district: user.user_metadata.location_district }
+      });
+
+      if (error) throw error;
+      setRecommendation(data.recommendation);
+    } catch (error: any) {
+      console.error('추천을 가져오는데 실패했습니다:', error);
+      toast.error('추천을 가져오는데 실패했습니다');
+    } finally {
+      setIsLoadingRecommendation(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
       {/* Weather and Date Section */}
@@ -246,6 +268,44 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
             ))}
           </div>
         )}
+      </section>
+
+      {/* Activity Recommendations Section */}
+      <section className="w-full max-w-2xl mt-6">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">오늘 뭐 할까요?</h2>
+        </div>
+
+        <div className="bg-gradient-to-br from-card/90 to-card/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-sm">
+          {isLoadingRecommendation ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-3 text-senior-base text-muted-foreground">추천을 불러오는 중...</span>
+            </div>
+          ) : recommendation ? (
+            <div className="space-y-4">
+              <div className="text-senior-base text-foreground whitespace-pre-line leading-relaxed">
+                {recommendation}
+              </div>
+              <Button
+                onClick={fetchRecommendation}
+                variant="outline"
+                className="w-full mt-4"
+              >
+                다른 추천 보기
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-senior-base text-muted-foreground mb-4">
+                오늘 하루를 즐겁게 보낼 수 있는 활동을 추천해드릴게요
+              </p>
+              <Button onClick={fetchRecommendation} variant="default">
+                추천 받기
+              </Button>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Mood Recording Section - Moved to Bottom */}
