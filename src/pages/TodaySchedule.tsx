@@ -59,6 +59,18 @@ const getWeatherEmoji = (code: number): string => {
   return "🌤️";
 };
 
+// 이벤트 타입에 따른 아이콘
+const getEventIcon = (eventType: string | null): string => {
+  if (!eventType) return "🎪";
+  if (eventType.includes("음악") || eventType.includes("클래식") || eventType.includes("콘서트")) return "🎵";
+  if (eventType.includes("전시") || eventType.includes("미술")) return "🎨";
+  if (eventType.includes("연극") || eventType.includes("뮤지컬")) return "🎭";
+  if (eventType.includes("무용")) return "💃";
+  if (eventType.includes("영화")) return "🎬";
+  if (eventType.includes("교육") || eventType.includes("체험")) return "📚";
+  return "🎪";
+};
+
 export default function TodaySchedule({ onAddSchedule, userId }: TodayScheduleProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -88,7 +100,76 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       }
     };
 
+    const fetchRecommendations = async () => {
+      if (!user?.user_metadata?.location_district) return;
+
+      const district = user.user_metadata.location_district;
+      
+      try {
+        // Fetch cultural events for the user's district
+        const { data: events, error } = await supabase
+          .from("cultural_events")
+          .select("*")
+          .eq("district", district)
+          .gte("end_date", new Date().toISOString())
+          .order("start_date", { ascending: true })
+          .limit(2);
+
+        if (error) throw error;
+
+        if (events && events.length > 0) {
+          const formattedEvents = events.map(event => ({
+            id: event.id,
+            type: "event",
+            title: event.title,
+            location: event.place || district,
+            image: getEventIcon(event.event_type),
+            data: event
+          }));
+          setRecommendations(formattedEvents);
+        } else {
+          // Fallback to default recommendations
+          setRecommendations([
+            {
+              id: 1,
+              type: "event",
+              title: "가을 음악회",
+              location: "동네 문화센터",
+              image: "🎵",
+            },
+            {
+              id: 2,
+              type: "place",
+              title: "단풍 구경하기",
+              location: "근처 공원",
+              image: "🍁",
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("추천 정보를 가져오는데 실패했습니다:", error);
+        // Set fallback recommendations
+        setRecommendations([
+          {
+            id: 1,
+            type: "event",
+            title: "가을 음악회",
+            location: "동네 문화센터",
+            image: "🎵",
+          },
+          {
+            id: 2,
+            type: "place",
+            title: "단풍 구경하기",
+            location: "근처 공원",
+            image: "🍁",
+          },
+        ]);
+      }
+    };
+
     fetchWeather();
+    fetchRecommendations();
   }, [user]);
 
   const handleLogout = async () => {
@@ -108,22 +189,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
     { id: 2, time: "오후 2:00", title: "손주 만나는 날", shared: true },
   ];
 
-  const recommendations = [
-    {
-      id: 1,
-      type: "event",
-      title: "가을 음악회",
-      location: "동네 문화센터",
-      image: "🎵",
-    },
-    {
-      id: 2,
-      type: "place",
-      title: "단풍 구경하기",
-      location: "근처 공원",
-      image: "🍁",
-    },
-  ];
+  const [recommendations, setRecommendations] = useState<any[]>([]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
@@ -202,25 +268,41 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           </h2>
         </div>
 
-        <div className="flex flex-col gap-3">
-          {recommendations.map((rec) => (
-            <div
-              key={rec.id}
-              className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
-            >
-              <div className="text-3xl">
-                {rec.image}
+        {recommendations.length === 0 ? (
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50">
+            <p className="text-senior-base text-muted-foreground">추천 정보를 불러오는 중...</p>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-3">
+            {recommendations.map((rec) => (
+              <div
+                key={rec.id}
+                className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
+                onClick={() => {
+                  if (rec.data?.detail_url) {
+                    window.open(rec.data.detail_url, '_blank');
+                  }
+                }}
+              >
+                <div className="text-3xl flex-shrink-0">
+                  {rec.image}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-senior-lg font-semibold text-foreground truncate">{rec.title}</p>
+                  <p className="text-senior-sm text-muted-foreground flex items-center gap-1">
+                    <MapPin size={16} className="flex-shrink-0" />
+                    <span className="truncate">{rec.location}</span>
+                  </p>
+                  {rec.data?.is_free !== undefined && (
+                    <span className="text-senior-xs text-primary mt-1 inline-block">
+                      {rec.data.is_free ? "무료" : "유료"}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div>
-                <p className="text-senior-lg font-semibold text-foreground">{rec.title}</p>
-                <p className="text-senior-sm text-muted-foreground flex items-center gap-1">
-                  <MapPin size={16} />
-                  {rec.location}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Floating Action Button */}
