@@ -8,38 +8,38 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Modern trendy gradient palette with soft pastels */
-    --background: 260 35% 98%;
-    --foreground: 260 20% 20%;
+    /* Warm family-friendly palette with cozy tones */
+    --background: 35 40% 97%;
+    --foreground: 25 25% 25%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 260 20% 20%;
+    --card: 30 45% 99%;
+    --card-foreground: 25 25% 25%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 260 20% 20%;
+    --popover: 30 45% 99%;
+    --popover-foreground: 25 25% 25%;
 
-    /* Trendy lavender-purple for primary actions */
-    --primary: 265 65% 65%;
+    /* Warm coral-orange for primary actions */
+    --primary: 15 80% 65%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft mint accent for secondary actions */
-    --secondary: 165 45% 88%;
-    --secondary-foreground: 260 20% 20%;
+    /* Soft peach for secondary actions */
+    --secondary: 30 60% 88%;
+    --secondary-foreground: 25 25% 25%;
 
-    --muted: 260 20% 95%;
-    --muted-foreground: 260 15% 55%;
+    --muted: 35 30% 94%;
+    --muted-foreground: 25 20% 50%;
 
-    /* Coral-pink accent for highlights */
-    --accent: 345 75% 75%;
-    --accent-foreground: 260 20% 20%;
+    /* Golden yellow accent for highlights */
+    --accent: 45 90% 70%;
+    --accent-foreground: 25 25% 25%;
 
     /* Clear destructive color */
-    --destructive: 0 80% 60%;
+    --destructive: 0 75% 58%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 260 20% 90%;
-    --input: 260 20% 90%;
-    --ring: 265 65% 65%;
+    --border: 30 25% 88%;
+    --input: 30 25% 88%;
+    --ring: 15 80% 65%;
 
     /* Large radius for senior-friendly UI */
     --radius: 1rem;
