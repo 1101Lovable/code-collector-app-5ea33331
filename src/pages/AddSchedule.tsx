@@ -30,7 +30,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
   const [endTime, setEndTime] = useState(() => {
     if (scheduleToEdit?.end_time) {
       const d = new Date(scheduleToEdit.end_time);
-      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
     }
     return "";
   });
@@ -115,11 +115,11 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
     // Validate time range if both times are provided
     if (time && endTime) {
-      const [startH, startM] = time.split(':').map(Number);
-      const [endH, endM] = endTime.split(':').map(Number);
+      const [startH, startM] = time.split(":").map(Number);
+      const [endH, endM] = endTime.split(":").map(Number);
       const startMinutes = startH * 60 + startM;
       const endMinutes = endH * 60 + endM;
-      
+
       if (endMinutes <= startMinutes) {
         toast.error("종료 시간은 시작 시간보다 늦어야 합니다");
         return;
@@ -132,9 +132,13 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       // Parse time to create proper timestamps
       const cleanTime = time ? time.split(":").slice(0, 2).join(":") : null;
       const cleanEndTime = endTime ? endTime.split(":").slice(0, 2).join(":") : null;
-      
+
       const startTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T00:00:00`;
-      const endTimeValue = cleanEndTime ? `${date}T${cleanEndTime}:00` : (cleanTime ? `${date}T${cleanTime}:00` : `${date}T23:59:59`);
+      const endTimeValue = cleanEndTime
+        ? `${date}T${cleanEndTime}:00`
+        : cleanTime
+          ? `${date}T${cleanTime}:00`
+          : `${date}T23:59:59`;
 
       // Validate group selection if sharing
       if (shareWithFamily) {
@@ -161,25 +165,22 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
       let scheduleId;
       if (isEditing) {
-        const { error } = await supabase
-          .from("schedules")
-          .update(scheduleData)
-          .eq("id", scheduleToEdit.id);
-        
+        const { error } = await supabase.from("schedules").update(scheduleData).eq("id", scheduleToEdit.id);
+
         if (error) throw error;
         scheduleId = scheduleToEdit.id;
 
         // Delete existing shares
-        await supabase
-          .from("schedule_family_shares")
-          .delete()
-          .eq("schedule_id", scheduleId);
+        await supabase.from("schedule_family_shares").delete().eq("schedule_id", scheduleId);
       } else {
-        const { data, error } = await supabase.from("schedules").insert({
-          ...scheduleData,
-          user_id: user.id,
-        }).select();
-        
+        const { data, error } = await supabase
+          .from("schedules")
+          .insert({
+            ...scheduleData,
+            user_id: user.id,
+          })
+          .select();
+
         if (error) throw error;
         scheduleId = data[0].id;
       }
@@ -191,9 +192,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
           family_group_id: groupId,
         }));
 
-        const { error: sharesError } = await supabase
-          .from("schedule_family_shares")
-          .insert(sharesToInsert);
+        const { error: sharesError } = await supabase.from("schedule_family_shares").insert(sharesToInsert);
 
         if (sharesError) throw sharesError;
       }
@@ -285,12 +284,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
               </div>
               <p className="text-senior-xl text-muted-foreground pl-11">선택한 그룹이 일정을 함께 볼 수 있어요</p>
             </div>
-            <Switch 
-              id="share" 
-              checked={shareWithFamily} 
-              onCheckedChange={setShareWithFamily} 
-              className="scale-150" 
-            />
+            <Switch id="share" checked={shareWithFamily} onCheckedChange={setShareWithFamily} className="scale-150" />
           </div>
 
           {/* Group Selection */}
@@ -303,9 +297,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
                     key={group.id}
                     onClick={() => {
                       setSelectedGroupIds((prev) =>
-                        prev.includes(group.id)
-                          ? prev.filter((id) => id !== group.id)
-                          : [...prev, group.id]
+                        prev.includes(group.id) ? prev.filter((id) => id !== group.id) : [...prev, group.id],
                       );
                     }}
                     className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
@@ -316,11 +308,11 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-senior-xl font-semibold">{group.name}</span>
-                      <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
-                        selectedGroupIds.includes(group.id)
-                          ? "border-primary bg-primary"
-                          : "border-muted-foreground"
-                      }`}>
+                      <div
+                        className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
+                          selectedGroupIds.includes(group.id) ? "border-primary bg-primary" : "border-muted-foreground"
+                        }`}
+                      >
                         {selectedGroupIds.includes(group.id) && (
                           <div className="w-3 h-3 bg-primary-foreground rounded-sm"></div>
                         )}
@@ -344,7 +336,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
       {/* Action Buttons */}
       <div className="px-6 pb-6 mt-10">
-        <Button size="xl" onClick={handleSave} className="w-full" disabled={isSaving}>
+        <Button size="2xl" onClick={handleSave} className="w-full" disabled={isSaving}>
           {isSaving ? "저장 중..." : isEditing ? "일정 수정하기" : "일정 저장하기"}
         </Button>
       </div>
