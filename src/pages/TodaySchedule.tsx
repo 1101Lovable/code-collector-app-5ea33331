@@ -368,6 +368,28 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
     }
   };
 
+  const isEventWithFixedTime = () => {
+    return (
+      selectedRecommendation?.type === "event" &&
+      selectedRecommendation?.data?.start_date
+    );
+  };
+
+  const getFixedEventDate = () => {
+    if (!isEventWithFixedTime()) return "";
+    const startDate = new Date(selectedRecommendation.data.start_date);
+    return toLocalDateString(startDate);
+  };
+
+  const getFixedEventTime = () => {
+    if (!isEventWithFixedTime()) return "";
+    const eventTime = selectedRecommendation.data.event_time;
+    if (!eventTime) return "";
+    // event_time이 "14:00~16:00" 같은 형식일 수 있으므로 시작 시간만 추출
+    const match = eventTime.match(/(\d{1,2}):(\d{2})/);
+    return match ? `${match[1].padStart(2, "0")}:${match[2]}` : "";
+  };
+
   const today = new Date();
   const [recommendations, setRecommendations] = useState<any[]>([]);
 
@@ -493,7 +515,24 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setSelectedRecommendation(rec)}
+                  onClick={() => {
+                    setSelectedRecommendation(rec);
+                    // 고정된 시간이 있는 이벤트는 날짜/시간 자동 설정
+                    if (rec.type === "event" && rec.data?.start_date) {
+                      const startDate = new Date(rec.data.start_date);
+                      setAddScheduleDate(toLocalDateString(startDate));
+                      const eventTime = rec.data.event_time;
+                      if (eventTime) {
+                        const match = eventTime.match(/(\d{1,2}):(\d{2})/);
+                        if (match) {
+                          setAddScheduleTime(`${match[1].padStart(2, "0")}:${match[2]}`);
+                        }
+                      }
+                    } else {
+                      setAddScheduleDate(toLocalDateString(new Date()));
+                      setAddScheduleTime("");
+                    }
+                  }}
                   className="flex-shrink-0"
                 >
                   일정 추가
@@ -505,12 +544,20 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       </section>
 
       {/* Add to Schedule Dialog */}
-      <Dialog open={!!selectedRecommendation} onOpenChange={(open) => !open && setSelectedRecommendation(null)}>
+      <Dialog
+        open={!!selectedRecommendation}
+        onOpenChange={(open) => !open && setSelectedRecommendation(null)}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle className="text-senior-xl">일정 추가</DialogTitle>
             <DialogDescription className="text-senior-base">
               {selectedRecommendation?.title}을(를) 일정에 추가합니다
+              {isEventWithFixedTime() && (
+                <span className="block mt-2 text-senior-sm text-muted-foreground">
+                  ⏰ 이 행사는 시간이 정해져 있어요
+                </span>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
@@ -524,11 +571,12 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                 className="h-14 text-senior-base px-4"
                 value={addScheduleDate}
                 onChange={(e) => setAddScheduleDate(e.target.value)}
+                disabled={isEventWithFixedTime()}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="schedule-time" className="text-senior-lg">
-                시간 (선택)
+                시간 {!isEventWithFixedTime() && "(선택)"}
               </Label>
               <Input
                 id="schedule-time"
@@ -536,6 +584,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                 className="h-14 text-senior-base px-4"
                 value={addScheduleTime}
                 onChange={(e) => setAddScheduleTime(e.target.value)}
+                disabled={isEventWithFixedTime()}
               />
             </div>
             <Button
