@@ -91,7 +91,7 @@ export default function FamilyNews() {
               latest_mood: moodData?.mood || null,
               mood_time: moodData?.recorded_at || null,
             };
-          })
+          }),
         );
 
         setFamilyMembers(familyData);
@@ -179,12 +179,8 @@ export default function FamilyNews() {
           </div>
         ) : familyMembers.length === 0 ? (
           <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50 shadow-sm">
-            <p className="text-senior-base text-muted-foreground mb-2">
-              아직 가족 그룹이 없어요
-            </p>
-            <p className="text-senior-sm text-muted-foreground">
-              설정에서 가족을 초대해보세요
-            </p>
+            <p className="text-senior-base text-muted-foreground mb-2">아직 그룹이 없어요</p>
+            <p className="text-senior-sm text-muted-foreground">설정에서 가족을 초대해보세요</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -192,9 +188,7 @@ export default function FamilyNews() {
               <div
                 key={member.user_id}
                 className={`bg-card/90 backdrop-blur-sm rounded-2xl p-4 border transition-all hover:shadow-md ${
-                  member.user_id === user?.id 
-                    ? "border-primary/50 shadow-sm shadow-primary/10" 
-                    : "border-border/50"
+                  member.user_id === user?.id ? "border-primary/50 shadow-sm shadow-primary/10" : "border-border/50"
                 }`}
               >
                 <div className="flex items-center gap-4">
@@ -219,18 +213,12 @@ export default function FamilyNews() {
                       )}
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-2xl">
-                        {getMoodEmoji(member.latest_mood)}
-                      </span>
+                      <span className="text-2xl">{getMoodEmoji(member.latest_mood)}</span>
                       <div>
                         <p className="text-senior-sm">
-                          {member.latest_mood
-                            ? moods.find((m) => m.id === member.latest_mood)?.label
-                            : "기분 미기록"}
+                          {member.latest_mood ? moods.find((m) => m.id === member.latest_mood)?.label : "기분 미기록"}
                         </p>
-                        <p className="text-senior-xs text-muted-foreground">
-                          {getTimeAgo(member.mood_time)}
-                        </p>
+                        <p className="text-senior-xs text-muted-foreground">{getTimeAgo(member.mood_time)}</p>
                       </div>
                     </div>
                   </div>
@@ -247,10 +235,8 @@ export default function FamilyNews() {
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
           <h1 className="text-senior-2xl font-bold">오늘 기분은 어떠세요?</h1>
         </div>
-        <p className="text-senior-sm text-muted-foreground mb-6">
-          선택하신 기분은 가족들에게 알려져요
-        </p>
-        
+        <p className="text-senior-sm text-muted-foreground mb-6">선택하신 기분은 가족들에게 알려져요</p>
+
         <div className="grid grid-cols-2 gap-3">
           {moods.map((mood) => (
             <Button
@@ -259,8 +245,8 @@ export default function FamilyNews() {
               size="xl"
               onClick={() => handleMoodSelect(mood.id)}
               className={`h-28 bg-card/80 backdrop-blur-sm border transition-all hover:scale-[1.02] ${
-                selectedMood === mood.id 
-                  ? "border-primary/50 shadow-lg shadow-primary/20 bg-primary/5" 
+                selectedMood === mood.id
+                  ? "border-primary/50 shadow-lg shadow-primary/20 bg-primary/5"
                   : "border-border/50 hover:border-primary/30"
               }`}
             >
@@ -277,7 +263,7 @@ export default function FamilyNews() {
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
           <h2 className="text-senior-xl font-bold">나의 건강 기록하기</h2>
         </div>
-        
+
         <div className="space-y-3">
           <Button
             variant="health"
@@ -288,7 +274,7 @@ export default function FamilyNews() {
             <Heart className="text-destructive" size={24} />
             <span className="text-senior-base">혈압 기록하기</span>
           </Button>
-          
+
           <Button
             variant="health"
             size="lg"
@@ -298,7 +284,7 @@ export default function FamilyNews() {
             <Activity className="text-senior-bad" size={24} />
             <span className="text-senior-base">혈당 기록하기</span>
           </Button>
-          
+
           <Button
             variant="health"
             size="lg"
@@ -311,9 +297,7 @@ export default function FamilyNews() {
         </div>
 
         <div className="mt-6 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
-          <p className="text-senior-sm text-center">
-            💚 건강 정보는 가족과 자동으로 공유돼요
-          </p>
+          <p className="text-senior-sm text-center">💚 건강 정보는 가족과 자동으로 공유돼요</p>
         </div>
       </section>
     </div>

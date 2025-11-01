@@ -125,7 +125,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
       if (memberError) throw memberError;
 
-      toast.success("가족 그룹이 생성되었습니다!");
+      toast.success("그룹이 생성되었습니다!");
 
       setNewGroupName("");
       setCreateDialogOpen(false);
@@ -220,7 +220,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
                 <ArrowLeft size={24} />
               </Button>
             )}
-            <h2 className="text-senior-2xl font-bold text-secondary-foreground">가족 그룹 관리</h2>
+            <h2 className="text-senior-2xl font-bold text-secondary-foreground">그룹 관리</h2>
           </div>
         </div>
 
@@ -235,8 +235,8 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-senior-xl">새 가족 그룹 만들기</DialogTitle>
-                <DialogDescription className="text-senior-base">가족 그룹 이름을 입력해주세요</DialogDescription>
+                <DialogTitle className="text-senior-xl">새 그룹 만들기</DialogTitle>
+                <DialogDescription className="text-senior-base">그룹 이름을 입력해주세요</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
                 <div className="space-y-2">
@@ -272,7 +272,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
             </DialogTrigger>
             <DialogContent className="max-w-md">
               <DialogHeader>
-                <DialogTitle className="text-senior-xl">가족 그룹 참여하기</DialogTitle>
+                <DialogTitle className="text-senior-xl">그룹 참여하기</DialogTitle>
                 <DialogDescription className="text-senior-base">초대 코드를 입력해주세요</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 pt-4">
@@ -308,7 +308,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
           {myGroups.length === 0 ? (
             <Card className="p-8 text-center">
-              <p className="text-senior-base text-muted-foreground mb-2">아직 가족 그룹이 없어요</p>
+              <p className="text-senior-base text-muted-foreground mb-2">아직 그룹이 없어요</p>
               <p className="text-senior-sm text-muted-foreground">새 그룹을 만들거나 초대 코드로 참여해보세요</p>
             </Card>
           ) : (
