@@ -12,21 +12,6 @@ interface WeatherData {
   weathercode: number;
 }
 
-interface FamilyMember {
-  user_id: string;
-  display_name: string;
-  avatar_url: string | null;
-  latest_mood: string | null;
-  mood_time: string | null;
-}
-
-const moods = [
-  { id: "good", emoji: "😊", label: "좋음" },
-  { id: "okay", emoji: "🙂", label: "보통" },
-  { id: "sad", emoji: "😥", label: "속상함" },
-  { id: "sick", emoji: "🤒", label: "아파요" },
-];
-
 const districtCoordinates: Record<string, { lat: number; lon: number }> = {
   종로구: { lat: 37.5735, lon: 126.9792 },
   중구: { lat: 37.5641, lon: 126.9979 },
@@ -60,7 +45,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
   const { user } = useAuth();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
-  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -105,74 +89,8 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
       }
     };
 
-    const fetchFamilyMembers = async () => {
-      if (!user) return;
-
-      try {
-        const { data: familyMemberships, error: membershipError } = await supabase
-          .from("family_members")
-          .select("family_group_id")
-          .eq("user_id", user.id);
-
-        if (membershipError) throw membershipError;
-
-        if (!familyMemberships || familyMemberships.length === 0) {
-          setFamilyMembers([]);
-          return;
-        }
-
-        const familyGroupIds = familyMemberships.map((m) => m.family_group_id);
-
-        const { data: members, error: membersError } = await supabase
-          .from("family_members")
-          .select("user_id")
-          .in("family_group_id", familyGroupIds);
-
-        if (membersError) throw membersError;
-
-        if (!members || members.length === 0) {
-          setFamilyMembers([]);
-          return;
-        }
-
-        const userIds = members.map((m) => m.user_id);
-
-        const { data: profiles, error: profilesError } = await supabase
-          .from("profiles")
-          .select("user_id, display_name, avatar_url")
-          .in("user_id", userIds);
-
-        if (profilesError) throw profilesError;
-
-        const familyData: FamilyMember[] = await Promise.all(
-          (profiles || []).map(async (profile) => {
-            const { data: moodData } = await supabase
-              .from("mood_records")
-              .select("mood, recorded_at")
-              .eq("user_id", profile.user_id)
-              .order("recorded_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            return {
-              user_id: profile.user_id,
-              display_name: profile.display_name,
-              avatar_url: profile.avatar_url,
-              latest_mood: moodData?.mood || null,
-              mood_time: moodData?.recorded_at || null,
-            };
-          })
-        );
-
-        setFamilyMembers(familyData);
-      } catch (error: any) {
-        console.error("Error fetching family members:", error);
-      }
-    };
-
     fetchWeather();
     fetchSchedules();
-    fetchFamilyMembers();
 
     const channel = supabase
       .channel('schedule-changes')
@@ -214,12 +132,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     const period = hour < 12 ? "오전" : "오후";
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
     return `${period} ${displayHour}:${minutes}`;
-  };
-
-  const getMoodEmoji = (mood: string | null) => {
-    if (!mood) return "❓";
-    const moodData = moods.find((m) => m.id === mood);
-    return moodData?.emoji || "❓";
   };
 
   return (
@@ -286,36 +198,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
                     <Users size={14} /> 가족
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Family Mood Section */}
-      <section className="w-full max-w-2xl mt-8 pb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            우리 가족 기분
-          </h2>
-        </div>
-
-        {familyMembers.length === 0 ? (
-          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50">
-            <p className="text-senior-base text-muted-foreground">아직 가족 그룹이 없어요</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3">
-            {familyMembers.slice(0, 4).map((member) => (
-              <div
-                key={member.user_id}
-                className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 text-center"
-              >
-                <div className="text-4xl mb-2">{getMoodEmoji(member.latest_mood)}</div>
-                <p className="text-senior-base font-semibold truncate">{member.display_name}</p>
-                <p className="text-senior-xs text-muted-foreground">
-                  {member.latest_mood ? moods.find((m) => m.id === member.latest_mood)?.label : "기록 없음"}
-                </p>
               </div>
             ))}
           </div>
