@@ -1,4 +1,4 @@
-import { Plus, UserPlus, Copy, Check, ArrowLeft, Users, Trash2 } from "lucide-react";
+import { Plus, UserPlus, Copy, Check, ArrowLeft, Users, Trash2, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,9 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deletingGroup, setDeletingGroup] = useState<{ id: string; name: string } | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [leaveDialogOpen, setLeaveDialogOpen] = useState(false);
+  const [leavingGroup, setLeavingGroup] = useState<{ id: string; name: string } | null>(null);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   useEffect(() => {
     fetchMyGroups();
@@ -225,6 +228,31 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
     }
   };
 
+  const handleLeaveGroup = async () => {
+    if (!leavingGroup || !user) return;
+
+    setIsLeaving(true);
+    try {
+      const { error } = await supabase
+        .from("family_members")
+        .delete()
+        .eq("family_group_id", leavingGroup.id)
+        .eq("user_id", user.id);
+
+      if (error) throw error;
+
+      toast.success(`"${leavingGroup.name}" 그룹에서 나왔습니다`);
+      setLeaveDialogOpen(false);
+      setLeavingGroup(null);
+      fetchMyGroups();
+    } catch (error: any) {
+      console.error("Error leaving group:", error);
+      toast.error("그룹 나가기에 실패했습니다");
+    } finally {
+      setIsLeaving(false);
+    }
+  };
+
   if (selectedGroup) {
     return (
       <GroupMembers groupId={selectedGroup.id} groupName={selectedGroup.name} onBack={() => setSelectedGroup(null)} />
@@ -379,7 +407,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
                       <Users size={20} />
                       구성원 보기
                     </Button>
-                    {group.created_by === user?.id && (
+                    {group.created_by === user?.id ? (
                       <Button
                         variant="destructive"
                         size="lg"
@@ -391,6 +419,19 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
                       >
                         <Trash2 size={20} />
                         삭제
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => {
+                          setLeavingGroup({ id: group.id, name: group.name });
+                          setLeaveDialogOpen(true);
+                        }}
+                        className="gap-2"
+                      >
+                        <LogOut size={20} />
+                        나가기
                       </Button>
                     )}
                   </div>
@@ -417,6 +458,27 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {isDeleting ? "삭제 중..." : "삭제"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={leaveDialogOpen} onOpenChange={setLeaveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-senior-xl">그룹 나가기</AlertDialogTitle>
+            <AlertDialogDescription className="text-senior-base">
+              "{leavingGroup?.name}" 그룹에서 나가시겠습니까? 다시 참여하려면 초대 코드가 필요합니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-senior-base">취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLeaveGroup}
+              disabled={isLeaving}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isLeaving ? "나가는 중..." : "나가기"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
