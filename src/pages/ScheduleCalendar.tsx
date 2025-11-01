@@ -466,7 +466,9 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
                 >
                   <span className="text-senior-sm mb-1">{day}</span>
 
-                  {hasSchedule && <div className="w-2 h-2 rounded-full bg-primary" />}
+                  {hasSchedule && (
+                    <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"}`} />
+                  )}
                 </div>
               );
             })}
@@ -499,7 +501,7 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                   {schedule.family_id && schedule.user_id !== user?.id && (
-                    <div className="flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-full text-senior-xs text-accent-foreground mt-2 inline-flex">
+                    <div className="flex items-center gap-1 bg-accent/10 px-2 py-1 rounded-full text-senior-xs text-accent mt-2 inline-flex">
                       <Users size={12} /> {schedule.owner_name}님
                     </div>
                   )}
