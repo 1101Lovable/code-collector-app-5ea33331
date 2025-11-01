@@ -68,31 +68,19 @@ export default function FamilyNews() {
         // Get profiles
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
-          .select("id, display_name, avatar_url")
+          .select("id, display_name, avatar_url, mood")
           .in("id", userIds);
 
         if (profilesError) throw profilesError;
 
-        // Get latest mood for each user
-        const familyData: FamilyMember[] = await Promise.all(
-          (profiles || []).map(async (profile) => {
-            const { data: moodData } = await supabase
-              .from("mood_records")
-              .select("mood, recorded_at")
-              .eq("user_id", profile.id)
-              .order("recorded_at", { ascending: false })
-              .limit(1)
-              .maybeSingle();
-
-            return {
-              user_id: profile.id,
-              display_name: profile.display_name,
-              avatar_url: profile.avatar_url,
-              latest_mood: moodData?.mood || null,
-              mood_time: moodData?.recorded_at || null,
-            };
-          }),
-        );
+        // Get mood from profiles
+        const familyData: FamilyMember[] = (profiles || []).map((profile) => ({
+          user_id: profile.id,
+          display_name: profile.display_name,
+          avatar_url: profile.avatar_url,
+          latest_mood: (profile as any).mood || null,
+          mood_time: null,
+        }));
 
         setFamilyMembers(familyData);
       } catch (error: any) {
@@ -110,10 +98,13 @@ export default function FamilyNews() {
     if (!user) return;
 
     try {
-      const { error } = await supabase.from("mood_records").insert({
-        user_id: user.id,
-        mood: moodId,
-      });
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          mood: moodId,
+          mood_updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
 
       if (error) throw error;
 

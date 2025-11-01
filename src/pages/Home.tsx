@@ -102,18 +102,16 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
 
       try {
         const { data, error } = await supabase
-          .from("mood_records")
+          .from("profiles")
           .select("mood")
-          .eq("user_id", user.id)
-          .order("recorded_at", { ascending: false })
-          .limit(1)
+          .eq("id", user.id)
           .maybeSingle();
 
         if (error) throw error;
         setCurrentMood(data?.mood || null);
         setIsMoodSectionCollapsed(!!data?.mood);
       } catch (error) {
-        console.error("기분 기록을 가져오는데 실패했습니다:", error);
+        console.error("기분 정보를 가져오는데 실패했습니다:", error);
       }
     };
 
@@ -169,20 +167,22 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
 
     setIsRecordingMood(true);
     try {
-      const { error } = await supabase.from("mood_records").insert({
-        user_id: user.id,
-        mood: moodId,
-        recorded_at: new Date().toISOString(),
-      });
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          mood: moodId,
+          mood_updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id);
 
       if (error) throw error;
 
       setCurrentMood(moodId);
       setIsMoodSectionCollapsed(true);
-      toast.success("오늘의 기분이 기록되었습니다");
+      toast.success("오늘의 기분이 설정되었습니다");
     } catch (error: any) {
-      console.error("기분 기록에 실패했습니다:", error);
-      toast.error("기분 기록에 실패했습니다");
+      console.error("기분 설정에 실패했습니다:", error);
+      toast.error("기분 설정에 실패했습니다");
     } finally {
       setIsRecordingMood(false);
     }
