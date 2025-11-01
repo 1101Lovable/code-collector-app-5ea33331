@@ -185,25 +185,32 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
 
         if (ownError) throw ownError;
 
-        // Get user's group code for family schedules
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("family_group_code")
-          .eq("user_id", user.id)
-          .single();
+        // Get family members for shared schedules
+        const { data: memberships } = await supabase
+          .from("family_members")
+          .select("family_group_id")
+          .eq("user_id", user.id);
 
         let familySchedules: any[] = [];
         
-        if (profile?.family_group_code) {
+        if (memberships && memberships.length > 0) {
+          const groupIds = memberships.map((m) => m.family_group_id);
+          
           // Get family members' user IDs
-          const { data: familyProfiles } = await supabase
-            .from("profiles")
-            .select("user_id, display_name")
-            .eq("family_group_code", profile.family_group_code)
+          const { data: familyMembers } = await supabase
+            .from("family_members")
+            .select("user_id")
+            .in("family_group_id", groupIds)
             .neq("user_id", user.id);
 
-          if (familyProfiles && familyProfiles.length > 0) {
-            const familyUserIds = familyProfiles.map(p => p.user_id);
+          if (familyMembers && familyMembers.length > 0) {
+            const familyUserIds = familyMembers.map(m => m.user_id);
+            
+            // Get family members' display names
+            const { data: familyProfiles } = await supabase
+              .from("profiles")
+              .select("user_id, display_name")
+              .in("user_id", familyUserIds);
             
             // Get shared schedules from family members
             const { data: sharedSchedules } = await supabase
@@ -216,7 +223,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
 
             // Add display names to family schedules
             familySchedules = (sharedSchedules || []).map(schedule => {
-              const memberProfile = familyProfiles.find(p => p.user_id === schedule.user_id);
+              const memberProfile = familyProfiles?.find(p => p.user_id === schedule.user_id);
               return {
                 ...schedule,
                 owner_name: memberProfile?.display_name || "가족"

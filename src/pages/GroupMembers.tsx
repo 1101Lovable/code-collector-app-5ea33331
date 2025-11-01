@@ -31,42 +31,45 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
 
   const fetchMembers = async () => {
     try {
-      // Get group details
-      const { data: group, error: groupError } = await supabase
-        .from("family_groups")
-        .select("invite_code")
-        .eq("id", groupId)
-        .single();
+      // Get all members of this group
+      const { data: memberData, error: memberError } = await supabase
+        .from("family_members")
+        .select("id, user_id, is_head")
+        .eq("family_group_id", groupId);
 
-      if (groupError) throw groupError;
+      if (memberError) throw memberError;
 
-      // Get all profiles with this group code
-      const { data: profiles, error: profileError } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url, is_family_head")
-        .eq("family_group_code", group.invite_code);
-
-      if (profileError) throw profileError;
-
-      if (!profiles || profiles.length === 0) {
+      if (!memberData || memberData.length === 0) {
         setMembers([]);
         return;
       }
 
       // Check if current user is head
-      const userProfile = profiles.find((p) => p.user_id === user?.id);
-      setIsUserHead(userProfile?.is_family_head || false);
+      const userMembership = memberData.find((m) => m.user_id === user?.id);
+      setIsUserHead(userMembership?.is_head || false);
 
-      // Map to member format
-      const membersData = profiles.map((profile) => ({
-        id: profile.user_id,
-        user_id: profile.user_id,
-        display_name: profile.display_name || "Unknown",
-        avatar_url: profile.avatar_url || null,
-        is_head: profile.is_family_head,
-      }));
+      // Get profile details
+      const userIds = memberData.map((m) => m.user_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", userIds);
 
-      setMembers(membersData);
+      if (profileError) throw profileError;
+
+      // Combine member data with profiles
+      const membersWithProfiles = memberData.map((member) => {
+        const profile = profiles?.find((p) => p.user_id === member.user_id);
+        return {
+          id: member.id,
+          user_id: member.user_id,
+          display_name: profile?.display_name || "Unknown",
+          avatar_url: profile?.avatar_url || null,
+          is_head: member.is_head,
+        };
+      });
+
+      setMembers(membersWithProfiles);
     } catch (error: any) {
       console.error("Error fetching members:", error);
       toast.error("구성원 정보를 불러오는데 실패했습니다");
@@ -81,9 +84,9 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
 
     try {
       const { error } = await supabase
-        .from("profiles")
-        .update({ is_family_head: !currentIsHead })
-        .eq("user_id", memberId);
+        .from("family_members")
+        .update({ is_head: !currentIsHead })
+        .eq("id", memberId);
 
       if (error) throw error;
 

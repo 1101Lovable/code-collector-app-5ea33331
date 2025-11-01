@@ -63,41 +63,47 @@ export default function GroupCalendar() {
     if (!user) return;
 
     try {
-      // Get user's profile with group code
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("family_group_code")
-        .eq("user_id", user.id)
-        .single();
+      // Get all family groups the user is a member of
+      const { data: memberships, error: membershipError } = await supabase
+        .from("family_members")
+        .select("family_group_id")
+        .eq("user_id", user.id);
 
-      if (profileError) throw profileError;
+      if (membershipError) throw membershipError;
 
-      if (!profile?.family_group_code) {
+      if (!memberships || memberships.length === 0) {
         setMyGroups([]);
         return;
       }
 
+      const groupIds = memberships.map((m) => m.family_group_id);
+
       // Get group details
-      const { data: group, error: groupError } = await supabase
+      const { data: groups, error: groupsError } = await supabase
         .from("family_groups")
         .select("*")
-        .eq("invite_code", profile.family_group_code)
-        .single();
+        .in("id", groupIds);
 
-      if (groupError) throw groupError;
+      if (groupsError) throw groupsError;
 
-      // Get member count
-      const { count } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .eq("family_group_code", profile.family_group_code);
+      // Get member count for each group
+      const groupsWithCount = await Promise.all(
+        (groups || []).map(async (group) => {
+          const { count } = await supabase
+            .from("family_members")
+            .select("*", { count: "exact", head: true })
+            .eq("family_group_id", group.id);
 
-      setMyGroups([{
-        id: group.id,
-        name: group.name,
-        invite_code: group.invite_code,
-        member_count: count || 0,
-      }]);
+          return {
+            id: group.id,
+            name: group.name,
+            invite_code: group.invite_code,
+            member_count: count || 0,
+          };
+        })
+      );
+
+      setMyGroups(groupsWithCount);
     } catch (error: any) {
       console.error("Error fetching groups:", error);
     }
@@ -107,12 +113,27 @@ export default function GroupCalendar() {
     if (!user || !selectedGroup) return;
 
     try {
-      // Get all profiles with same group code (excluding current user)
+      // Get all members of the selected group
+      const { data: members, error: membersError } = await supabase
+        .from("family_members")
+        .select("user_id")
+        .eq("family_group_id", selectedGroup.id)
+        .neq("user_id", user.id);
+
+      if (membersError) throw membersError;
+
+      if (!members || members.length === 0) {
+        setFamilyMembers([]);
+        return;
+      }
+
+      const userIds = members.map((m) => m.user_id);
+
+      // Get profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url")
-        .eq("family_group_code", selectedGroup.invite_code)
-        .neq("user_id", user.id);
+        .in("user_id", userIds);
 
       if (profilesError) throw profilesError;
 
