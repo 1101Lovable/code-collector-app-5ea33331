@@ -146,7 +146,6 @@ export type Database = {
           created_by: string
           id: string
           invite_code: string | null
-          leader_who: string | null
           name: string
           updated_at: string | null
         }
@@ -155,7 +154,6 @@ export type Database = {
           created_by: string
           id?: string
           invite_code?: string | null
-          leader_who?: string | null
           name: string
           updated_at?: string | null
         }
@@ -164,7 +162,6 @@ export type Database = {
           created_by?: string
           id?: string
           invite_code?: string | null
-          leader_who?: string | null
           name?: string
           updated_at?: string | null
         }
@@ -182,7 +179,6 @@ export type Database = {
         Row: {
           family_group_id: string
           id: string
-          is_head: boolean | null
           joined_at: string | null
           mood: string | null
           user_id: string
@@ -190,7 +186,6 @@ export type Database = {
         Insert: {
           family_group_id: string
           id?: string
-          is_head?: boolean | null
           joined_at?: string | null
           mood?: string | null
           user_id: string
@@ -198,7 +193,6 @@ export type Database = {
         Update: {
           family_group_id?: string
           id?: string
-          is_head?: boolean | null
           joined_at?: string | null
           mood?: string | null
           user_id?: string

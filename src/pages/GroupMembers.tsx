@@ -1,4 +1,4 @@
-import { Crown, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -11,7 +11,7 @@ interface GroupMember {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
-  is_head: boolean;
+  is_creator: boolean;
   mood: string | null;
 }
 
@@ -25,7 +25,6 @@ interface GroupMembersProps {
 export default function GroupMembers({ groupId, groupName, onBack, showMood = false }: GroupMembersProps) {
   const { user } = useAuth();
   const [members, setMembers] = useState<GroupMember[]>([]);
-  const [isUserHead, setIsUserHead] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -33,10 +32,19 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
 
   const fetchMembers = async () => {
     try {
+      // Get the group info to know who created it
+      const { data: groupData, error: groupError } = await supabase
+        .from("family_groups")
+        .select("created_by")
+        .eq("id", groupId)
+        .single();
+
+      if (groupError) throw groupError;
+
       // Get all members of this group
       const { data: memberData, error: memberError } = await supabase
         .from("family_members")
-        .select("id, user_id, is_head")
+        .select("id, user_id")
         .eq("family_group_id", groupId);
 
       if (memberError) throw memberError;
@@ -45,10 +53,6 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
         setMembers([]);
         return;
       }
-
-      // Check if current user is head
-      const userMembership = memberData.find((m) => m.user_id === user?.id);
-      setIsUserHead(userMembership?.is_head || false);
 
       // Get profile details including mood
       const userIds = memberData.map((m) => m.user_id);
@@ -67,7 +71,7 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
           user_id: member.user_id,
           display_name: profile?.display_name || "Unknown",
           avatar_url: profile?.avatar_url || null,
-          is_head: member.is_head,
+          is_creator: member.user_id === groupData.created_by,
           mood: profile?.mood || null,
         };
       });
@@ -83,32 +87,6 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
     } catch (error: any) {
       console.error("Error fetching members:", error);
       toast.error("구성원 정보를 불러오는데 실패했습니다");
-    }
-  };
-
-  const handleSetAsHead = async (memberId: string) => {
-    try {
-      // 먼저 모든 멤버의 is_head를 false로 설정
-      const { error: resetError } = await supabase
-        .from("family_members")
-        .update({ is_head: false })
-        .eq("family_group_id", groupId);
-
-      if (resetError) throw resetError;
-
-      // 선택한 멤버를 가장으로 설정
-      const { error: setError } = await supabase
-        .from("family_members")
-        .update({ is_head: true })
-        .eq("id", memberId);
-
-      if (setError) throw setError;
-
-      toast.success("가장으로 지정되었습니다");
-      fetchMembers();
-    } catch (error: any) {
-      console.error("가장 지정 오류:", error);
-      toast.error("가장 지정에 실패했습니다");
     }
   };
 
@@ -172,47 +150,27 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
                             나
                           </span>
                         )}
+                        {member.is_creator && (
+                          <span className="text-senior-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                            👑 그룹장
+                          </span>
+                        )}
                       </div>
-                      {member.is_head && (
-                        <div className="flex items-center gap-1 text-accent">
-                          <Crown size={16} />
-                          <span className="text-senior-sm">가장</span>
-                        </div>
-                      )}
                       {member.user_id !== user?.id && (
                         <p className="text-senior-sm text-primary cursor-pointer hover:underline mt-1">
                           캘린더 보기
                         </p>
                      )}
                    </div>
-                   {showMood && getMoodEmoji(member.mood) && (
-                     <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.mood)}</div>
-                   )}
-                 </div>
-
-                  {isUserHead && !member.is_head && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleSetAsHead(member.id)}
-                      className="gap-2 flex-shrink-0"
-                    >
-                      가장 지정
-                    </Button>
-                  )}
+                    {showMood && getMoodEmoji(member.mood) && (
+                      <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.mood)}</div>
+                    )}
+                  </div>
                 </div>
               </Card>
             ))
           )}
         </div>
-
-        {isUserHead && (
-          <div className="mt-6 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
-            <p className="text-senior-sm text-center">
-              💡 가장은 다른 구성원을 가장으로 지정하거나 해제할 수 있습니다
-            </p>
-          </div>
-        )}
       </section>
     </div>
   );

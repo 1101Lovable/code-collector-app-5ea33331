@@ -23,8 +23,8 @@ interface FamilyMember {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
-  is_head: boolean;
   latest_mood?: string | null;
+  is_creator?: boolean;
 }
 
 export default function GroupCalendar() {
@@ -124,10 +124,19 @@ export default function GroupCalendar() {
     if (!user || !selectedGroup) return;
 
     try {
+      // Get the group info to know who created it
+      const { data: groupData, error: groupError } = await supabase
+        .from("family_groups")
+        .select("created_by")
+        .eq("id", selectedGroup.id)
+        .single();
+
+      if (groupError) throw groupError;
+
       // Get all members of the selected group (including current user)
       const { data: members, error: membersError } = await supabase
         .from("family_members")
-        .select("user_id, is_head")
+        .select("user_id")
         .eq("family_group_id", selectedGroup.id);
 
       if (membersError) throw membersError;
@@ -155,7 +164,7 @@ export default function GroupCalendar() {
           user_id: member.user_id,
           display_name: profile?.display_name || "Unknown",
           avatar_url: profile?.avatar_url || null,
-          is_head: member.is_head,
+          is_creator: member.user_id === groupData.created_by,
           latest_mood: profile?.mood || null,
         };
       });
@@ -430,9 +439,9 @@ export default function GroupCalendar() {
                         {member.user_id === user?.id && (
                           <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">나</span>
                         )}
-                        {member.is_head && (
+                        {member.is_creator && (
                           <span className="text-senior-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
-                            👑 가장
+                            👑 그룹장
                           </span>
                         )}
                       </div>

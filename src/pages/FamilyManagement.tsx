@@ -22,7 +22,6 @@ interface FamilyGroup {
   name: string;
   created_by: string;
   member_count: number;
-  is_head: boolean;
   invite_code: string;
 }
 
@@ -53,7 +52,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
       // Get all family groups the user is a member of
       const { data: memberships, error: membershipError } = await supabase
         .from("family_members")
-        .select("family_group_id, is_head")
+        .select("family_group_id")
         .eq("user_id", user.id);
 
       if (membershipError) throw membershipError;
@@ -82,12 +81,9 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
             console.error("Error counting members:", countError);
           }
 
-          const membership = memberships.find((m) => m.family_group_id === group.id);
-
           return {
             ...group,
             member_count: members?.length || 0,
-            is_head: membership?.is_head || false,
           };
         }),
       );
@@ -121,11 +117,10 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
       if (groupError) throw groupError;
 
-      // Add creator as a member and set as head
+      // Add creator as a member
       const { error: memberError } = await supabase.from("family_members").insert({
         family_group_id: newGroup.id,
         user_id: user.id,
-        is_head: true,
       });
 
       if (memberError) throw memberError;
@@ -310,14 +305,9 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
                       <p className="text-senior-sm text-muted-foreground">구성원 {group.member_count}명</p>
                     </div>
                     <div className="flex gap-2">
-                      {group.is_head && (
-                        <span className="text-senior-xs bg-accent/10 text-accent px-3 py-1 rounded-full flex items-center gap-1">
-                          👑 가장
-                        </span>
-                      )}
                       {group.created_by === user?.id && (
-                        <span className="text-senior-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
-                          내가 만듦
+                        <span className="text-senior-xs bg-accent/10 text-accent px-3 py-1 rounded-full flex items-center gap-1">
+                          👑 그룹장
                         </span>
                       )}
                     </div>
