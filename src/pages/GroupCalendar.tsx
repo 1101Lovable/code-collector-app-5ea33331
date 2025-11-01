@@ -136,37 +136,26 @@ export default function GroupCalendar() {
 
       const userIds = members.map((m) => m.user_id);
 
-      // Get profiles
+      // Get profiles with mood
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar_url")
+        .select("user_id, display_name, avatar_url, mood")
         .in("user_id", userIds);
 
       if (profilesError) throw profilesError;
 
-      // Get latest mood for each member
-      const membersWithData = await Promise.all(
-        members.map(async (member) => {
-          const profile = profiles?.find((p) => p.user_id === member.user_id);
-          
-          // Fetch latest mood
-          const { data: moodData } = await supabase
-            .from("mood_records")
-            .select("mood")
-            .eq("user_id", member.user_id)
-            .order("recorded_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-          return {
-            user_id: member.user_id,
-            display_name: profile?.display_name || "Unknown",
-            avatar_url: profile?.avatar_url || null,
-            is_head: member.is_head,
-            latest_mood: moodData?.mood || null,
-          };
-        })
-      );
+      // Map members with profile data including mood
+      const membersWithData = members.map((member) => {
+        const profile = profiles?.find((p) => p.user_id === member.user_id);
+        
+        return {
+          user_id: member.user_id,
+          display_name: profile?.display_name || "Unknown",
+          avatar_url: profile?.avatar_url || null,
+          is_head: member.is_head,
+          latest_mood: profile?.mood || null,
+        };
+      });
 
       setFamilyMembers(membersWithData);
     } catch (error: any) {

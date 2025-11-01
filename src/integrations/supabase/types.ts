@@ -256,6 +256,8 @@ export type Database = {
           location_city: string | null
           location_district: string | null
           location_dong: string | null
+          mood: string | null
+          mood_updated_at: string | null
           updated_at: string
           user_id: string
         }
@@ -267,6 +269,8 @@ export type Database = {
           location_city?: string | null
           location_district?: string | null
           location_dong?: string | null
+          mood?: string | null
+          mood_updated_at?: string | null
           updated_at?: string
           user_id: string
         }
@@ -278,6 +282,8 @@ export type Database = {
           location_city?: string | null
           location_district?: string | null
           location_dong?: string | null
+          mood?: string | null
+          mood_updated_at?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -340,6 +346,7 @@ export type Database = {
         Args: { _family_group_id: string; _user_id: string }
         Returns: boolean
       }
+      reset_daily_moods: { Args: never; Returns: undefined }
       user_family_groups: {
         Args: { _user_id: string }
         Returns: {

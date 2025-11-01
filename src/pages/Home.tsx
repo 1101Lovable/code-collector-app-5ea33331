@@ -53,6 +53,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
   const [schedules, setSchedules] = useState<any[]>([]);
   const [currentMood, setCurrentMood] = useState<string | null>(null);
   const [isRecordingMood, setIsRecordingMood] = useState(false);
+  const [isMoodSectionCollapsed, setIsMoodSectionCollapsed] = useState(false);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -102,15 +103,14 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
 
       try {
         const { data, error } = await supabase
-          .from("mood_records")
+          .from("profiles")
           .select("mood")
           .eq("user_id", user.id)
-          .order("recorded_at", { ascending: false })
-          .limit(1)
           .maybeSingle();
 
         if (error) throw error;
         setCurrentMood(data?.mood || null);
+        setIsMoodSectionCollapsed(!!data?.mood);
       } catch (error) {
         console.error("기분 기록을 가져오는데 실패했습니다:", error);
       }
@@ -168,15 +168,17 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     setIsRecordingMood(true);
     try {
       const { error } = await supabase
-        .from("mood_records")
-        .insert({
-          user_id: user.id,
+        .from("profiles")
+        .update({
           mood: moodId,
-        });
+          mood_updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
       setCurrentMood(moodId);
+      setIsMoodSectionCollapsed(true);
       toast.success("오늘의 기분이 기록되었습니다");
     } catch (error: any) {
       console.error("기분 기록에 실패했습니다:", error);
@@ -218,56 +220,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
         )}
       </div>
 
-      {/* Mood Recording Section */}
-      <section className="w-full max-w-2xl mt-6">
-        <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            오늘의 기분
-          </h2>
-        </div>
-
-        {currentMood ? (
-          <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border/50 text-center">
-            <div className="text-6xl mb-3">
-              {moods.find((m) => m.id === currentMood)?.emoji}
-            </div>
-            <p className="text-senior-lg font-semibold mb-2">
-              {moods.find((m) => m.id === currentMood)?.label}
-            </p>
-            <p className="text-senior-sm text-muted-foreground mb-4">
-              오늘 기분이 기록되었습니다
-            </p>
-            <Button
-              variant="outline"
-              onClick={() => setCurrentMood(null)}
-              className="text-senior-base"
-            >
-              다시 선택하기
-            </Button>
-          </div>
-        ) : (
-          <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
-            <p className="text-senior-base text-center mb-4 text-muted-foreground">
-              오늘 기분은 어떠신가요?
-            </p>
-            <div className="grid grid-cols-3 gap-4">
-              {moods.map((mood) => (
-                <Button
-                  key={mood.id}
-                  onClick={() => handleMoodSelect(mood.id)}
-                  disabled={isRecordingMood}
-                  variant="outline"
-                  className="flex flex-col items-center gap-3 h-auto py-6 hover:bg-accent/10 transition-all"
-                >
-                  <div className="text-5xl">{mood.emoji}</div>
-                  <span className="text-senior-base font-semibold">{mood.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-      </section>
-
       {/* Today's Schedule */}
       <section className="w-full max-w-2xl mt-6">
         <div className="flex items-center gap-2 mb-4">
@@ -305,6 +257,88 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
           </div>
         )}
       </section>
+
+      {/* Mood Recording Section - Moved to Bottom */}
+      <section className="w-full max-w-2xl mt-6">
+        <div 
+          className="flex items-center gap-2 mb-4 cursor-pointer"
+          onClick={() => currentMood && setIsMoodSectionCollapsed(!isMoodSectionCollapsed)}
+        >
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">
+            오늘의 기분
+          </h2>
+        </div>
+
+        {isMoodSectionCollapsed && currentMood ? (
+          <div 
+            className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center justify-between cursor-pointer hover:shadow-md transition-all"
+            onClick={() => setIsMoodSectionCollapsed(false)}
+          >
+            <div className="flex items-center gap-3">
+              <div className="text-4xl">
+                {moods.find((m) => m.id === currentMood)?.emoji}
+              </div>
+              <p className="text-senior-lg font-semibold">
+                {moods.find((m) => m.id === currentMood)?.label}
+              </p>
+            </div>
+            <p className="text-senior-sm text-muted-foreground">
+              클릭하여 수정
+            </p>
+          </div>
+        ) : (
+          <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
+            {currentMood ? (
+              <div className="text-center">
+                <div className="text-6xl mb-3">
+                  {moods.find((m) => m.id === currentMood)?.emoji}
+                </div>
+                <p className="text-senior-lg font-semibold mb-2">
+                  {moods.find((m) => m.id === currentMood)?.label}
+                </p>
+                <p className="text-senior-sm text-muted-foreground mb-4">
+                  오늘 기분이 기록되었습니다
+                </p>
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                  {moods.map((mood) => (
+                    <Button
+                      key={mood.id}
+                      onClick={() => handleMoodSelect(mood.id)}
+                      disabled={isRecordingMood}
+                      variant={mood.id === currentMood ? "default" : "outline"}
+                      className="flex flex-col items-center gap-3 h-auto py-6 hover:bg-accent/10 transition-all"
+                    >
+                      <div className="text-5xl">{mood.emoji}</div>
+                      <span className="text-senior-base font-semibold">{mood.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-senior-base text-center mb-4 text-muted-foreground">
+                  오늘 기분은 어떠신가요?
+                </p>
+                <div className="grid grid-cols-3 gap-4">
+                  {moods.map((mood) => (
+                    <Button
+                      key={mood.id}
+                      onClick={() => handleMoodSelect(mood.id)}
+                      disabled={isRecordingMood}
+                      variant="outline"
+                      className="flex flex-col items-center gap-3 h-auto py-6 hover:bg-accent/10 transition-all"
+                    >
+                      <div className="text-5xl">{mood.emoji}</div>
+                      <span className="text-senior-base font-semibold">{mood.label}</span>
+                    </Button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+      </section>
+
 
       {/* Floating Action Button */}
       <motion.button
