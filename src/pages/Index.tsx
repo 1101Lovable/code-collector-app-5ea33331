@@ -1,19 +1,21 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import TodaySchedule from "./TodaySchedule";
+import Home from "./Home";
+import ScheduleCalendar from "./ScheduleCalendar";
+import GroupCalendar from "./GroupCalendar";
 import FamilyNews from "./FamilyNews";
 import AddSchedule from "./AddSchedule";
 import CalendarView from "./CalendarView";
 import BottomTabBar from "@/components/BottomTabBar";
 import { useAuth } from "@/contexts/AuthContext";
 
-type View = "schedule" | "family" | "add-schedule" | "calendar";
+type View = "home" | "schedule" | "group" | "family" | "add-schedule" | "calendar";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"schedule" | "family">("schedule");
-  const [currentView, setCurrentView] = useState<View>("schedule");
+  const [activeTab, setActiveTab] = useState<"home" | "schedule" | "group">("home");
+  const [currentView, setCurrentView] = useState<View>("home");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -43,27 +45,31 @@ const Index = () => {
     setCurrentView("calendar");
   };
 
-  const handleBackToSchedule = () => {
-    setCurrentView("schedule");
-    setActiveTab("schedule");
+  const handleBackToHome = () => {
+    setCurrentView("home");
+    setActiveTab("home");
   };
 
-  const handleTabChange = (tab: "schedule" | "family") => {
+  const handleTabChange = (tab: "home" | "schedule" | "group") => {
     setActiveTab(tab);
     setCurrentView(tab);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30">
-      {currentView === "schedule" && (
-        <TodaySchedule onAddSchedule={handleAddSchedule} userId={user.id} />
+      {currentView === "home" && (
+        <Home onAddSchedule={handleAddSchedule} />
       )}
+      
+      {currentView === "schedule" && <ScheduleCalendar />}
+      
+      {currentView === "group" && <GroupCalendar />}
       
       {currentView === "family" && <FamilyNews />}
       
       {currentView === "add-schedule" && (
         <AddSchedule
-          onBack={handleBackToSchedule}
+          onBack={handleBackToHome}
           onViewCalendar={handleViewCalendar}
         />
       )}
@@ -72,7 +78,7 @@ const Index = () => {
         <CalendarView onBack={() => setCurrentView("add-schedule")} />
       )}
 
-      {(currentView === "schedule" || currentView === "family") && (
+      {(currentView === "home" || currentView === "schedule" || currentView === "group") && (
         <BottomTabBar activeTab={activeTab} onTabChange={handleTabChange} />
       )}
     </div>
