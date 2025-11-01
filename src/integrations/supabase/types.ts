@@ -373,6 +373,8 @@ export type Database = {
     }
     Functions: {
       generate_invite_code: { Args: never; Returns: string }
+      is_family_head: { Args: { family_group_id: string }; Returns: boolean }
+      is_in_same_family: { Args: { family_group_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
