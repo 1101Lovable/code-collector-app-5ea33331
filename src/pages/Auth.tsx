@@ -134,7 +134,7 @@ export default function Auth() {
             />
           </div>
 
-          <Button type="submit" size="xl" className="w-full text-white">
+          <Button type="submit" size="xl" className="w-full text-white font-normal">
             {isLogin ? (
               <>
                 <LogIn />
