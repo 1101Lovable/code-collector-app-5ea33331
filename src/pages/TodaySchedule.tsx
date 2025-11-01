@@ -198,7 +198,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           // Get family members' user IDs
           const { data: familyProfiles } = await supabase
             .from("profiles")
-            .select("user_id")
+            .select("user_id, display_name")
             .eq("family_group_code", profile.family_group_code)
             .neq("user_id", user.id);
 
@@ -214,7 +214,14 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               .eq("shared_with_family", true)
               .order("schedule_time", { ascending: true });
 
-            familySchedules = sharedSchedules || [];
+            // Add display names to family schedules
+            familySchedules = (sharedSchedules || []).map(schedule => {
+              const memberProfile = familyProfiles.find(p => p.user_id === schedule.user_id);
+              return {
+                ...schedule,
+                owner_name: memberProfile?.display_name || "가족"
+              };
+            });
           }
         }
 
@@ -340,8 +347,8 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
                 {schedule.shared_with_family && schedule.user_id !== userId && (
-                  <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-senior-sm text-foreground flex-shrink-0 ml-4">
-                    <Users size={14} /> 가족
+                  <div className="flex items-center gap-1 bg-accent/10 px-3 py-1 rounded-full text-senior-sm text-accent-foreground flex-shrink-0 ml-4">
+                    <Users size={14} /> {schedule.owner_name}님
                   </div>
                 )}
               </div>
