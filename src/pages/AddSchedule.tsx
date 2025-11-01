@@ -41,17 +41,36 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
     try {
       // Parse time to create proper timestamps
       // Ensure time is in HH:MM format (remove seconds if present from scheduleToEdit)
-      const cleanTime = time ? time.split(':').slice(0, 2).join(':') : null;
+      const cleanTime = time ? time.split(":").slice(0, 2).join(":") : null;
       const startTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T00:00:00`;
       const endTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T23:59:59`;
+
+      // Determine family group id if sharing
+      let familyGroupId: string | null = null;
+      if (shareWithFamily) {
+        const { data: fm, error: fmError } = await supabase
+          .from("family_members")
+          .select("family_group_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (fmError) throw fmError;
+        if (!fm?.family_group_id) {
+          toast.error("그룹이 없어서 공유할 수 없어요");
+          setIsSaving(false);
+          return;
+        }
+        familyGroupId = fm.family_group_id;
+      }
 
       const scheduleData = {
         title: title.trim(),
         schedule_date: date,
-        schedule_time: time || null,
+        schedule_time: cleanTime || null,
         start_time: startTime,
         end_time: endTime,
-        family_id: shareWithFamily ? user.id : null,
+        family_id: shareWithFamily ? familyGroupId : null,
+        family_group_id: shareWithFamily ? familyGroupId : null,
+        shared_with_family: !!shareWithFamily,
       };
 
       let error;
