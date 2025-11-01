@@ -141,7 +141,9 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               요일
             </h1>
             {user?.user_metadata?.location_district && (
-              <p className="text-senior-lg text-muted-foreground">{user.user_metadata.location_district}</p>
+              <p className="text-senior-lg text-muted-foreground">
+                서울특별시 {user.user_metadata.location_district}
+              </p>
             )}
           </div>
           {weather && (
