@@ -263,6 +263,7 @@ export type Database = {
           location_dong: string | null
           mood: string | null
           mood_updated_at: string | null
+          phone_number: string | null
           updated_at: string | null
         }
         Insert: {
@@ -275,6 +276,7 @@ export type Database = {
           location_dong?: string | null
           mood?: string | null
           mood_updated_at?: string | null
+          phone_number?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -287,6 +289,7 @@ export type Database = {
           location_dong?: string | null
           mood?: string | null
           mood_updated_at?: string | null
+          phone_number?: string | null
           updated_at?: string | null
         }
         Relationships: []

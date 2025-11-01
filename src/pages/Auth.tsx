@@ -90,7 +90,7 @@ export default function Auth() {
       const email = phoneToEmail(cleanPhone);
       const { error } = isLogin
         ? await signIn(email, password)
-        : await signUp(email, password, displayName, locationCity, locationDistrict, locationDong);
+        : await signUp(email, password, displayName, locationCity, locationDistrict, locationDong, cleanPhone);
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
