@@ -18,6 +18,7 @@ interface FamilyMember {
   display_name: string;
   avatar_url: string | null;
   is_head: boolean;
+  latest_mood?: string | null;
 }
 
 export default function GroupCalendar() {
@@ -137,18 +138,31 @@ export default function GroupCalendar() {
 
       if (profilesError) throw profilesError;
 
-      // Combine member data with profiles
-      const membersWithProfiles = members.map((member) => {
-        const profile = profiles?.find((p) => p.user_id === member.user_id);
-        return {
-          user_id: member.user_id,
-          display_name: profile?.display_name || "Unknown",
-          avatar_url: profile?.avatar_url || null,
-          is_head: member.is_head,
-        };
-      });
+      // Get latest mood for each member
+      const membersWithData = await Promise.all(
+        members.map(async (member) => {
+          const profile = profiles?.find((p) => p.user_id === member.user_id);
+          
+          // Fetch latest mood
+          const { data: moodData } = await supabase
+            .from("mood_records")
+            .select("mood")
+            .eq("user_id", member.user_id)
+            .order("recorded_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-      setFamilyMembers(membersWithProfiles);
+          return {
+            user_id: member.user_id,
+            display_name: profile?.display_name || "Unknown",
+            avatar_url: profile?.avatar_url || null,
+            is_head: member.is_head,
+            latest_mood: moodData?.mood || null,
+          };
+        })
+      );
+
+      setFamilyMembers(membersWithData);
     } catch (error: any) {
       console.error("Error fetching family members:", error);
     }
@@ -423,17 +437,21 @@ export default function GroupCalendar() {
                             나
                           </span>
                         )}
+                        {member.is_head && (
+                          <span className="text-senior-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
+                            👑 가장
+                          </span>
+                        )}
                       </div>
-                      {member.is_head ? (
-                        <div className="flex items-center gap-1 text-accent">
-                          <span className="text-senior-sm">👑 가장</span>
-                        </div>
-                      ) : (
-                        <p className="text-senior-sm text-muted-foreground">
-                          캘린더 보기
-                        </p>
-                      )}
+                      <p className="text-senior-sm text-muted-foreground">
+                        캘린더 보기
+                      </p>
                     </div>
+                    {member.latest_mood && (
+                      <div className="text-4xl flex-shrink-0">
+                        {member.latest_mood}
+                      </div>
+                    )}
                   </div>
                 </Card>
               ))
