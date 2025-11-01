@@ -13,7 +13,7 @@ interface WeatherData {
 
 const moods = [
   { id: "good", emoji: "😊", label: "행복" },
-  { id: "okay", emoji: "😐", label: "보통" },
+  { id: "okay", emoji: "😑", label: "보통" },
   { id: "bad", emoji: "😡", label: "나쁨" },
 ];
 
