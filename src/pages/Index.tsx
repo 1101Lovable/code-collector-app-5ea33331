@@ -68,10 +68,10 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30">
       {currentView === "home" && (
-        <Home onAddSchedule={handleAddSchedule} />
+        <Home />
       )}
       
-      {currentView === "schedule" && <ScheduleCalendar onEditSchedule={handleEditSchedule} />}
+      {currentView === "schedule" && <ScheduleCalendar onEditSchedule={handleEditSchedule} onAddSchedule={handleAddSchedule} />}
       
       {currentView === "group" && <GroupCalendar />}
       

@@ -18,9 +18,10 @@ import { Label } from "@/components/ui/label";
 
 interface ScheduleCalendarProps {
   onEditSchedule?: (schedule: any) => void;
+  onAddSchedule?: () => void;
 }
 
-export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarProps = {}) {
+export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: ScheduleCalendarProps = {}) {
   const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -503,6 +504,17 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
             ))}
           </div>
         )}
+        
+        {/* Add Schedule Button */}
+        <div className="mt-6">
+          <Button 
+            size="xl" 
+            onClick={onAddSchedule}
+            className="w-full h-16 text-senior-xl font-bold"
+          >
+            일정 추가
+          </Button>
+        </div>
       </section>
 
       {/* AI Activity Recommendations */}

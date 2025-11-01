@@ -1,10 +1,9 @@
-import { Sun, CloudRain, Users, Plus } from "lucide-react";
+import { Sun, CloudRain, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { motion } from "framer-motion";
 import { toLocalDateString } from "@/lib/utils";
 
 interface WeatherData {
@@ -46,7 +45,7 @@ const districtCoordinates: Record<string, { lat: number; lon: number }> = {
   강동구: { lat: 37.5301, lon: 127.1238 },
 };
 
-export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
+export default function Home() {
   const { user } = useAuth();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
@@ -312,16 +311,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
           </div>
         )}
       </section>
-
-      {/* Floating Action Button */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={onAddSchedule}
-        className="fixed bottom-28 right-6 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-full w-14 h-14 flex items-center justify-center text-3xl shadow-lg hover:shadow-xl transition-shadow"
-      >
-        +
-      </motion.button>
     </div>
   );
 }
