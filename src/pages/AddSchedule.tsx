@@ -213,39 +213,40 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       {/* Form */}
       <div className="flex-1 px-6 pt-8 space-y-8">
         <div className="space-y-4">
-          <Label htmlFor="title" className="text-senior-lg">
+          <Label htmlFor="title" className="text-senior-xl">
             무엇을 하시나요?
           </Label>
           <Input
             id="title"
             placeholder="예: 병원 가기, 친구 만나기"
-            className="h-16 text-senior-base px-6 border-2"
+            className="h-20 text-senior-xl px-6 border-2"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="date" className="text-senior-lg">
+          <Label htmlFor="date" className="text-senior-xl">
             언제 하시나요?
           </Label>
           <Input
             id="date"
             type="date"
-            className="h-16 text-senior-base px-6 border-2"
+            className="h-20 text-senior-xl px-6 border-2"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="time" className="text-senior-lg">
+          <Label htmlFor="time" className="text-senior-xl">
             몇 시에 하시나요?
           </Label>
           <Input
             id="time"
             type="time"
-            className="h-16 text-senior-base px-6 border-2"
+            step="600"
+            className="h-20 text-senior-xl px-6 border-2"
             value={time}
             onChange={(e) => setTime(e.target.value)}
           />
