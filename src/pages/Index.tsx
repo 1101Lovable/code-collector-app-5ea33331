@@ -53,10 +53,22 @@ const Index = () => {
     setCurrentView(tab);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-senior-xl">로딩중...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {currentView === "schedule" && (
-        <TodaySchedule onAddSchedule={handleAddSchedule} />
+        <TodaySchedule onAddSchedule={handleAddSchedule} userId={user.id} />
       )}
       
       {currentView === "family" && <FamilyNews />}

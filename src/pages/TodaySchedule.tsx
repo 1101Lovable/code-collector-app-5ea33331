@@ -1,12 +1,28 @@
-import { Calendar, MapPin, Plus, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Plus, Sparkles, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface TodayScheduleProps {
   onAddSchedule: () => void;
+  userId: string;
 }
 
-export default function TodaySchedule({ onAddSchedule }: TodayScheduleProps) {
+export default function TodaySchedule({ onAddSchedule, userId }: TodayScheduleProps) {
+  const navigate = useNavigate();
+  
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("로그아웃에 실패했어요");
+    } else {
+      toast.success("로그아웃 되었어요");
+      navigate("/auth");
+    }
+  };
+
   // Mock data
   const today = new Date();
   const schedules = [
@@ -35,6 +51,17 @@ export default function TodaySchedule({ onAddSchedule }: TodayScheduleProps) {
     <div className="flex flex-col min-h-screen pb-24">
       {/* Weather and Date Section */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 rounded-b-3xl shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-senior-sm"
+          >
+            <LogOut size={20} />
+            로그아웃
+          </Button>
+        </div>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-senior-2xl mb-2">
