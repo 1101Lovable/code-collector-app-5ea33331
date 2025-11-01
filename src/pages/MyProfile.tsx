@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogOut, MapPin, Phone, Edit2, Save, UserX } from "lucide-react";
+import { LogOut, MapPin, Phone, Edit2, Save, UserX, Camera } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -46,6 +46,7 @@ export default function MyProfile() {
   const [editedProfile, setEditedProfile] = useState<Profile | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadProfile();
@@ -92,6 +93,54 @@ export default function MyProfile() {
       toast.error("프로필을 불러오는 중 오류가 발생했습니다");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!user || !event.target.files || event.target.files.length === 0) {
+      return;
+    }
+
+    const file = event.target.files[0];
+    const fileExt = file.name.split('.').pop();
+    const filePath = `${user.id}/avatar.${fileExt}`;
+
+    setUploading(true);
+    try {
+      // Delete old avatar if exists
+      if (profile?.avatar_url) {
+        const oldPath = profile.avatar_url.split('/').slice(-2).join('/');
+        await supabase.storage.from('avatars').remove([oldPath]);
+      }
+
+      // Upload new avatar
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Update profile
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
+      setEditedProfile(prev => prev ? { ...prev, avatar_url: publicUrl } : null);
+      toast.success("프로필 사진이 업데이트되었습니다");
+    } catch (error) {
+      console.error("Error uploading avatar:", error);
+      toast.error("사진 업로드 중 오류가 발생했습니다");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -190,12 +239,28 @@ export default function MyProfile() {
 
         <Card className="p-6 mb-6 backdrop-blur-sm bg-card/95 border-2">
           <div className="flex flex-col items-center mb-6">
-            <Avatar className="w-24 h-24 mb-4 border-4 border-primary/20">
-              <AvatarImage src={profile.avatar_url} />
-              <AvatarFallback className="text-senior-2xl bg-gradient-to-br from-primary/20 to-accent/20">
-                {profile.display_name?.charAt(0) || "?"}
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="w-24 h-24 mb-4 border-4 border-primary/20">
+                <AvatarImage src={profile.avatar_url} />
+                <AvatarFallback className="text-senior-2xl bg-gradient-to-br from-primary/20 to-accent/20">
+                  {profile.display_name?.charAt(0) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <label 
+                htmlFor="avatar-upload"
+                className="absolute bottom-3 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors shadow-lg"
+              >
+                <Camera size={18} />
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                  disabled={uploading}
+                />
+              </label>
+            </div>
             
             <div className="text-center w-full">
               {isEditing ? (

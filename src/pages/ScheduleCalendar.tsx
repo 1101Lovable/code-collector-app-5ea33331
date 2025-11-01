@@ -530,7 +530,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
           <Button 
             size="xl" 
             onClick={onAddSchedule}
-            className="w-full h-16 text-senior-xl font-bold"
+            className="w-full h-16 text-senior-xl font-bold text-primary-foreground"
           >
             일정 추가
           </Button>
@@ -603,7 +603,7 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
               <p className="text-senior-base text-muted-foreground mb-4">
                 오늘 하루를 즐겁게 보낼 수 있는 활동을 추천해드릴게요
               </p>
-              <Button onClick={fetchAIRecommendation} variant="default">
+              <Button onClick={fetchAIRecommendation} variant="default" className="text-primary-foreground">
                 추천 받기
               </Button>
             </div>
