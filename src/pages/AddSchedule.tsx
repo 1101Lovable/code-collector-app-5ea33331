@@ -336,7 +336,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
       {/* Action Buttons */}
       <div className="px-6 pb-6 mt-10">
-        <Button size="2xl" onClick={handleSave} className="w-full" disabled={isSaving}>
+        <Button size="xl" onClick={handleSave} className="w-full" disabled={isSaving}>
           {isSaving ? "저장 중..." : isEditing ? "일정 수정하기" : "일정 저장하기"}
         </Button>
       </div>
