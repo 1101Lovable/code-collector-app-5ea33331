@@ -15,7 +15,6 @@ const moods = [
 interface FamilyGroup {
   id: string;
   name: string;
-  invite_code: string;
   member_count: number;
 }
 
@@ -105,7 +104,6 @@ export default function GroupCalendar() {
           return {
             id: group.id,
             name: group.name,
-            invite_code: group.invite_code,
             member_count: count || 0,
           };
         })
@@ -136,17 +134,35 @@ export default function GroupCalendar() {
 
       const userIds = members.map((m) => m.user_id);
 
-      // Get profiles with mood
+      // Get profiles with mood from family_members
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar_url, mood")
-        .in("user_id", userIds);
+        .select("id, display_name, avatar_url")
+        .in("id", userIds);
 
       if (profilesError) throw profilesError;
 
+      // Get latest mood for each user
+      const profilesWithMood = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          const { data: memberData } = await supabase
+            .from("family_members")
+            .select("mood")
+            .eq("user_id", profile.id)
+            .eq("family_group_id", selectedGroup.id)
+            .maybeSingle();
+
+          return {
+            ...profile,
+            user_id: profile.id,
+            mood: memberData?.mood || null,
+          };
+        })
+      );
+
       // Map members with profile data including mood
       const membersWithData = members.map((member) => {
-        const profile = profiles?.find((p) => p.user_id === member.user_id);
+        const profile = profilesWithMood?.find((p) => p.user_id === member.user_id);
         
         return {
           user_id: member.user_id,
@@ -172,13 +188,13 @@ export default function GroupCalendar() {
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
       const endDate = `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
 
-      const { data, error } = await supabase
+      const { data, error } = (await supabase
         .from("schedules")
         .select("*")
         .eq("user_id", selectedMember)
         .eq("shared_with_family", true)
         .gte("schedule_date", startDate)
-        .lte("schedule_date", endDate);
+        .lte("schedule_date", endDate)) as { data: any[] | null; error: any };
 
       if (error) throw error;
 

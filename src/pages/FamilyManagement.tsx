@@ -20,7 +20,6 @@ import GroupMembers from "./GroupMembers";
 interface FamilyGroup {
   id: string;
   name: string;
-  invite_code: string;
   created_by: string;
   member_count: number;
   is_head: boolean;
@@ -129,9 +128,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
       if (memberError) throw memberError;
 
-      toast.success("가족 그룹이 생성되었습니다!", {
-        description: `초대 코드: ${newGroup.invite_code}`,
-      });
+      toast.success("가족 그룹이 생성되었습니다!");
 
       setNewGroupName("");
       setCreateDialogOpen(false);
@@ -152,11 +149,11 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
     setIsJoining(true);
     try {
-      // Find group by invite code
+      // Find group by name (temporary until invite_code is added)
       const { data: group, error: groupError } = await supabase
         .from("family_groups")
         .select("*")
-        .eq("invite_code", inviteCode.trim().toUpperCase())
+        .eq("name", inviteCode.trim())
         .maybeSingle();
 
       if (groupError) {
@@ -377,24 +374,12 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
                   <div className="flex items-center gap-2 bg-secondary/30 rounded-lg p-3 mb-3">
                     <div className="flex-1">
                       <p className="text-senior-xs text-muted-foreground mb-1">
-                        초대 코드
+                        그룹 멤버
                       </p>
-                      <p className="text-senior-xl font-bold font-mono">
-                        {group.invite_code}
+                      <p className="text-senior-xl font-bold">
+                        {group.member_count}명
                       </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleCopyCode(group.invite_code)}
-                      className="flex-shrink-0"
-                    >
-                      {copiedCode === group.invite_code ? (
-                        <Check size={20} className="text-primary" />
-                      ) : (
-                        <Copy size={20} />
-                      )}
-                    </Button>
                   </div>
 
                   <Button

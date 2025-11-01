@@ -209,8 +209,8 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
             // Get family members' display names
             const { data: familyProfiles } = await supabase
               .from("profiles")
-              .select("user_id, display_name")
-              .in("user_id", familyUserIds);
+              .select("id, display_name")
+              .in("id", familyUserIds);
             
             // Get shared schedules from family members
             const { data: sharedSchedules } = await supabase
@@ -223,7 +223,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
 
             // Add display names to family schedules
             familySchedules = (sharedSchedules || []).map(schedule => {
-              const memberProfile = familyProfiles?.find(p => p.user_id === schedule.user_id);
+              const memberProfile = familyProfiles?.find(p => p.id === schedule.user_id);
               return {
                 ...schedule,
                 owner_name: memberProfile?.display_name || "가족"

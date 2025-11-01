@@ -52,14 +52,14 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
       const userIds = memberData.map((m) => m.user_id);
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
+        .select("id, display_name, avatar_url")
+        .in("id", userIds);
 
       if (profileError) throw profileError;
 
       // Combine member data with profiles
       const membersWithProfiles = memberData.map((member) => {
-        const profile = profiles?.find((p) => p.user_id === member.user_id);
+        const profile = profiles?.find((p) => p.id === member.user_id);
         return {
           id: member.id,
           user_id: member.user_id,

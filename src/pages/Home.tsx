@@ -103,9 +103,11 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
 
       try {
         const { data, error } = await supabase
-          .from("profiles")
+          .from("mood_records")
           .select("mood")
           .eq("user_id", user.id)
+          .order("recorded_at", { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         if (error) throw error;
@@ -168,12 +170,12 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     setIsRecordingMood(true);
     try {
       const { error } = await supabase
-        .from("profiles")
-        .update({
+        .from("mood_records")
+        .insert({
+          user_id: user.id,
           mood: moodId,
-          mood_updated_at: new Date().toISOString(),
-        })
-        .eq("user_id", user.id);
+          recorded_at: new Date().toISOString(),
+        });
 
       if (error) throw error;
 

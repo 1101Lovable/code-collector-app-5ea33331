@@ -36,14 +36,19 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
     setIsSaving(true);
     
     try {
+      // Parse time to create proper timestamps
+      const startTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
+      const endTime = time ? `${date}T${time}:00` : `${date}T23:59:59`;
+      
       const { error } = await supabase
         .from("schedules")
         .insert({
           user_id: user.id,
           title: title.trim(),
           schedule_date: date,
-          schedule_time: time || null,
-          shared_with_family: shareWithFamily,
+          start_time: startTime,
+          end_time: endTime,
+          family_id: shareWithFamily ? null : null, // Will be set later when family feature is implemented
         });
 
       if (error) throw error;
