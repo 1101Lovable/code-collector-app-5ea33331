@@ -483,7 +483,7 @@ export default function GroupCalendar() {
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
       <section className="pt-8 pb-4 max-w-2xl mx-auto w-full">
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h2 className="text-senior-2xl font-bold text-secondary-foreground">내 그룹</h2>
         </div>
 
