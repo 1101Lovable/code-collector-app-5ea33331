@@ -27,6 +27,13 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
   const [title, setTitle] = useState(scheduleToEdit?.title || "");
   const [date, setDate] = useState(scheduleToEdit?.schedule_date || toLocalDateString(new Date()));
   const [time, setTime] = useState(scheduleToEdit?.schedule_time || "");
+  const [endTime, setEndTime] = useState(() => {
+    if (scheduleToEdit?.end_time) {
+      const d = new Date(scheduleToEdit.end_time);
+      return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+    }
+    return "";
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
   const [selectedGroupIds, setSelectedGroupIds] = useState<string[]>([]);
@@ -106,14 +113,28 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       return;
     }
 
+    // Validate time range if both times are provided
+    if (time && endTime) {
+      const [startH, startM] = time.split(':').map(Number);
+      const [endH, endM] = endTime.split(':').map(Number);
+      const startMinutes = startH * 60 + startM;
+      const endMinutes = endH * 60 + endM;
+      
+      if (endMinutes <= startMinutes) {
+        toast.error("종료 시간은 시작 시간보다 늦어야 합니다");
+        return;
+      }
+    }
+
     setIsSaving(true);
 
     try {
       // Parse time to create proper timestamps
-      // Ensure time is in HH:MM format (remove seconds if present from scheduleToEdit)
       const cleanTime = time ? time.split(":").slice(0, 2).join(":") : null;
+      const cleanEndTime = endTime ? endTime.split(":").slice(0, 2).join(":") : null;
+      
       const startTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T00:00:00`;
-      const endTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T23:59:59`;
+      const endTimeValue = cleanEndTime ? `${date}T${cleanEndTime}:00` : (cleanTime ? `${date}T${cleanTime}:00` : `${date}T23:59:59`);
 
       // Validate group selection if sharing
       if (shareWithFamily) {
@@ -134,7 +155,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
         schedule_date: date,
         schedule_time: cleanTime || null,
         start_time: startTime,
-        end_time: endTime,
+        end_time: endTimeValue,
         shared_with_family: !!shareWithFamily,
       };
 
@@ -213,36 +234,43 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       {/* Form */}
       <div className="flex-1 px-6 pt-8 space-y-8">
         <div className="space-y-4">
-          <Label htmlFor="title" className="text-senior-2xl font-bold">
+          <Label htmlFor="title" className="text-senior-xl font-bold">
             무엇을 하시나요?
           </Label>
           <Input
             id="title"
             placeholder="예: 병원 가기, 친구 만나기"
-            className="h-24 text-senior-2xl px-6 border-2"
+            className="h-24 text-senior-xl px-6 border-2"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="date" className="text-senior-2xl font-bold">
+          <Label htmlFor="date" className="text-senior-xl font-bold">
             언제 하시나요?
           </Label>
           <Input
             id="date"
             type="date"
-            className="h-24 text-senior-2xl px-6 border-2 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+            className="h-24 text-senior-xl px-6 border-2 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="time" className="text-senior-2xl font-bold">
-            몇 시에 하시나요?
+          <Label htmlFor="time" className="text-senior-xl font-bold">
+            몇 시에 시작하나요?
           </Label>
           <TimePicker value={time} onChange={setTime} />
+        </div>
+
+        <div className="space-y-4">
+          <Label htmlFor="end-time" className="text-senior-xl font-bold">
+            몇 시에 끝나나요? (선택)
+          </Label>
+          <TimePicker value={endTime} onChange={setEndTime} />
         </div>
 
         {/* Family Sharing Toggle */}
@@ -251,11 +279,11 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <Share2 className="text-accent" size={32} />
-                <Label htmlFor="share" className="text-senior-lg cursor-pointer">
+                <Label htmlFor="share" className="text-senior-xl cursor-pointer">
                   이 일정을 그룹에게 공유할까요?
                 </Label>
               </div>
-              <p className="text-senior-sm text-muted-foreground pl-11">선택한 그룹이 일정을 함께 볼 수 있어요</p>
+              <p className="text-senior-xl text-muted-foreground pl-11">선택한 그룹이 일정을 함께 볼 수 있어요</p>
             </div>
             <Switch 
               id="share" 
@@ -268,7 +296,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
           {/* Group Selection */}
           {shareWithFamily && familyGroups.length > 0 && (
             <div className="space-y-3 mt-4 pt-4 border-t border-border/50">
-              <Label className="text-senior-base text-muted-foreground">공유할 그룹 선택 (여러 개 가능):</Label>
+              <Label className="text-senior-xl text-muted-foreground">공유할 그룹 선택 (여러 개 가능):</Label>
               <div className="space-y-2">
                 {familyGroups.map((group) => (
                   <div
@@ -287,7 +315,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-senior-base font-semibold">{group.name}</span>
+                      <span className="text-senior-xl font-semibold">{group.name}</span>
                       <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all ${
                         selectedGroupIds.includes(group.id)
                           ? "border-primary bg-primary"
@@ -306,7 +334,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
           {shareWithFamily && familyGroups.length === 0 && (
             <div className="mt-4 pt-4 border-t border-border/50">
-              <p className="text-senior-sm text-muted-foreground text-center">
+              <p className="text-senior-xl text-muted-foreground text-center">
                 그룹이 없습니다. 먼저 그룹을 만들어주세요.
               </p>
             </div>

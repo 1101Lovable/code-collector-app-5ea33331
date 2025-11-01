@@ -90,6 +90,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   const [selectedRecommendation, setSelectedRecommendation] = useState<any>(null);
   const [addScheduleDate, setAddScheduleDate] = useState(toLocalDateString(new Date()));
   const [addScheduleTime, setAddScheduleTime] = useState("");
+  const [addScheduleEndTime, setAddScheduleEndTime] = useState("");
   const [isAddingSchedule, setIsAddingSchedule] = useState(false);
 
   useEffect(() => {
@@ -350,11 +351,26 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   const handleAddRecommendationToSchedule = async () => {
     if (!user || !selectedRecommendation) return;
 
+    // Validate time range if both times are provided
+    if (addScheduleTime && addScheduleEndTime) {
+      const [startH, startM] = addScheduleTime.split(':').map(Number);
+      const [endH, endM] = addScheduleEndTime.split(':').map(Number);
+      const startMinutes = startH * 60 + startM;
+      const endMinutes = endH * 60 + endM;
+      
+      if (endMinutes <= startMinutes) {
+        toast.error("종료 시간은 시작 시간보다 늦어야 합니다");
+        return;
+      }
+    }
+
     setIsAddingSchedule(true);
     try {
       const cleanTime = addScheduleTime ? addScheduleTime.split(":").slice(0, 2).join(":") : null;
+      const cleanEndTime = addScheduleEndTime ? addScheduleEndTime.split(":").slice(0, 2).join(":") : null;
+      
       const startTime = cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T00:00:00`;
-      const endTime = cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T23:59:59`;
+      const endTime = cleanEndTime ? `${addScheduleDate}T${cleanEndTime}:00` : (cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T23:59:59`);
 
       const { error } = await supabase.from("schedules").insert({
         user_id: user.id,
@@ -374,6 +390,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       setSelectedRecommendation(null);
       setAddScheduleDate(toLocalDateString(new Date()));
       setAddScheduleTime("");
+      setAddScheduleEndTime("");
     } catch (error) {
       console.error("일정 추가 오류:", error);
       toast.error("일정 추가에 실패했습니다");
@@ -575,23 +592,29 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="schedule-date" className="text-senior-2xl font-bold">
+              <Label htmlFor="schedule-date" className="text-senior-xl font-bold">
                 날짜
               </Label>
               <Input
                 id="schedule-date"
                 type="date"
-                className="h-24 text-senior-2xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                className="h-24 text-senior-xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 value={addScheduleDate}
                 onChange={(e) => setAddScheduleDate(e.target.value)}
                 disabled={isEventWithFixedTime()}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="schedule-time" className="text-senior-2xl font-bold">
-                시간 {!isEventWithFixedTime() && "(선택)"}
+              <Label htmlFor="schedule-time" className="text-senior-xl font-bold">
+                시작 시간 {!isEventWithFixedTime() && "(선택)"}
               </Label>
               <TimePicker value={addScheduleTime} onChange={setAddScheduleTime} disabled={isEventWithFixedTime()} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-end-time" className="text-senior-xl font-bold">
+                종료 시간 (선택)
+              </Label>
+              <TimePicker value={addScheduleEndTime} onChange={setAddScheduleEndTime} disabled={isEventWithFixedTime()} />
             </div>
             <Button
               size="xl"
