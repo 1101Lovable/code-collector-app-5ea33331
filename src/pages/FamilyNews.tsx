@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 
 const moods = [
   { id: "good", emoji: "😊", label: "좋음", color: "senior-good" },
-  { id: "okay", emoji: "🙂", label: "그저 그럼", color: "senior-neutral" },
+  { id: "okay", emoji: "🙂", label: "보통", color: "senior-neutral" },
   { id: "sad", emoji: "😥", label: "속상함", color: "senior-bad" },
   { id: "sick", emoji: "🤒", label: "아파요", color: "senior-sick" },
 ];
@@ -251,7 +251,7 @@ export default function FamilyNews() {
               variant="mood"
               size="xl"
               onClick={() => handleMoodSelect(mood.id)}
-              className={`min-h-[140px] ${
+              className={`h-[140px] ${
                 selectedMood === mood.id ? "border-primary border-4 bg-secondary" : ""
               }`}
             >
