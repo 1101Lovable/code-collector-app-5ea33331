@@ -238,42 +238,25 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
         if (memberships && memberships.length > 0) {
           const groupIds = memberships.map((m) => m.family_group_id);
 
-          // Get family members' user IDs
-          const { data: familyMembers } = await supabase
-            .from("family_members")
-            .select("user_id")
+          // Get shared schedules through schedule_family_shares
+          const { data: sharedSchedulesData } = await supabase
+            .from("schedule_family_shares")
+            .select(`
+              schedule_id,
+              family_group_id,
+              family_groups!inner(name),
+              schedules!inner(*)
+            `)
             .in("family_group_id", groupIds)
-            .neq("user_id", user.id);
+            .eq("schedules.schedule_date", today);
 
-          if (familyMembers && familyMembers.length > 0) {
-            const familyUserIds = familyMembers.map((m) => m.user_id);
-
-            // Get family members' display names
-            const { data: familyProfiles } = await supabase
-              .from("profiles")
-              .select("id, display_name")
-              .in("id", familyUserIds);
-
-            // Get shared schedules from family members
-            const scheduleQuery3 = supabase
-              .from("schedules")
-              .select("*")
-              .in("user_id", familyUserIds)
-              .eq("schedule_date", today)
-              .not("family_id", "is", null)
-              .order("start_time", { ascending: true });
-
-            const result3: any = await scheduleQuery3;
-            const sharedSchedules = result3.data;
-
-            // Add display names to family schedules
-            familySchedules = (sharedSchedules || []).map((schedule) => {
-              const memberProfile = familyProfiles?.find((p) => p.id === schedule.user_id);
-              return {
-                ...schedule,
-                owner_name: memberProfile?.display_name || "그룹",
-              };
-            });
+          if (sharedSchedulesData && sharedSchedulesData.length > 0) {
+            familySchedules = sharedSchedulesData
+              .filter((item: any) => item.schedules.user_id !== user.id)
+              .map((item: any) => ({
+                ...item.schedules,
+                group_name: item.family_groups.name,
+              }));
           }
         }
 
@@ -470,9 +453,9 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {schedule.family_id && schedule.user_id !== userId && (
+                {schedule.user_id !== userId && schedule.group_name && (
                   <div className="flex items-center gap-1 bg-accent/10 px-3 py-1 rounded-full text-senior-sm text-accent-foreground flex-shrink-0 ml-4">
-                    <Users size={14} /> {schedule.owner_name}님
+                    <Users size={14} /> {schedule.group_name}
                   </div>
                 )}
               </div>
