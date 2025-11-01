@@ -174,15 +174,58 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
 
       try {
         const today = new Date().toISOString().split('T')[0];
-        const { data, error } = await supabase
+        
+        // Get user's own schedules
+        const { data: ownSchedules, error: ownError } = await supabase
           .from("schedules")
           .select("*")
+          .eq("user_id", user.id)
           .eq("schedule_date", today)
           .order("schedule_time", { ascending: true });
 
-        if (error) throw error;
+        if (ownError) throw ownError;
 
-        setSchedules(data || []);
+        // Get user's group code for family schedules
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("family_group_code")
+          .eq("user_id", user.id)
+          .single();
+
+        let familySchedules: any[] = [];
+        
+        if (profile?.family_group_code) {
+          // Get family members' user IDs
+          const { data: familyProfiles } = await supabase
+            .from("profiles")
+            .select("user_id")
+            .eq("family_group_code", profile.family_group_code)
+            .neq("user_id", user.id);
+
+          if (familyProfiles && familyProfiles.length > 0) {
+            const familyUserIds = familyProfiles.map(p => p.user_id);
+            
+            // Get shared schedules from family members
+            const { data: sharedSchedules } = await supabase
+              .from("schedules")
+              .select("*")
+              .in("user_id", familyUserIds)
+              .eq("schedule_date", today)
+              .eq("shared_with_family", true)
+              .order("schedule_time", { ascending: true });
+
+            familySchedules = sharedSchedules || [];
+          }
+        }
+
+        // Combine and sort all schedules
+        const allSchedules = [...(ownSchedules || []), ...familySchedules].sort((a, b) => {
+          if (!a.schedule_time) return 1;
+          if (!b.schedule_time) return -1;
+          return a.schedule_time.localeCompare(b.schedule_time);
+        });
+
+        setSchedules(allSchedules);
       } catch (error) {
         console.error("일정을 가져오는데 실패했습니다:", error);
       }
