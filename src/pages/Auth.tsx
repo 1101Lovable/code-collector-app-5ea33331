@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { LogIn, UserPlus, Phone } from "lucide-react";
+import heartIcon from "@/assets/heart-icon.png";
 
 export default function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -79,10 +80,13 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12 bg-gradient-to-br from-muted via-background to-accent/20">
-      <Card className="w-full max-w-md p-8 shadow-2xl border-2">
+    <div className="flex min-h-screen items-center justify-center px-6 py-12 bg-gradient-to-br from-primary/20 via-background to-accent/30">
+      <Card className="w-full max-w-md p-8 shadow-2xl border-2 backdrop-blur-sm bg-card/95">
         <div className="text-center mb-8">
-          <h1 className="text-senior-2xl mb-3">
+          <div className="flex justify-center mb-4">
+            <img src={heartIcon} alt="Heart" className="w-20 h-20 animate-fade-in" />
+          </div>
+          <h1 className="text-senior-2xl mb-3 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             {isLogin ? "로그인" : "회원가입"}
           </h1>
           <p className="text-senior-base text-muted-foreground">
