@@ -14,7 +14,178 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      family_groups: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      family_members: {
+        Row: {
+          family_group_id: string
+          id: string
+          joined_at: string
+          user_id: string
+        }
+        Insert: {
+          family_group_id: string
+          id?: string
+          joined_at?: string
+          user_id: string
+        }
+        Update: {
+          family_group_id?: string
+          id?: string
+          joined_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_family_group_id_fkey"
+            columns: ["family_group_id"]
+            isOneToOne: false
+            referencedRelation: "family_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_records: {
+        Row: {
+          id: string
+          notes: string | null
+          record_type: string
+          recorded_at: string
+          user_id: string
+          value: string
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          record_type: string
+          recorded_at?: string
+          user_id: string
+          value: string
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          record_type?: string
+          recorded_at?: string
+          user_id?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      mood_records: {
+        Row: {
+          id: string
+          mood: string
+          recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          mood: string
+          recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          mood?: string
+          recorded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      schedules: {
+        Row: {
+          created_at: string
+          description: string | null
+          family_group_id: string | null
+          id: string
+          schedule_date: string
+          schedule_time: string | null
+          shared_with_family: boolean
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          family_group_id?: string | null
+          id?: string
+          schedule_date: string
+          schedule_time?: string | null
+          shared_with_family?: boolean
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          family_group_id?: string | null
+          id?: string
+          schedule_date?: string
+          schedule_time?: string | null
+          shared_with_family?: boolean
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedules_family_group_id_fkey"
+            columns: ["family_group_id"]
+            isOneToOne: false
+            referencedRelation: "family_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
