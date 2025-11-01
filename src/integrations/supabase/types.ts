@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      cultural_events: {
+        Row: {
+          created_at: string | null
+          detail_url: string | null
+          district: string | null
+          end_date: string | null
+          event_time: string | null
+          event_type: string | null
+          fee: string | null
+          id: string
+          is_free: boolean | null
+          latitude: number | null
+          longitude: number | null
+          main_image: string | null
+          organization: string | null
+          performers: string | null
+          place: string | null
+          program_description: string | null
+          start_date: string | null
+          target_audience: string | null
+          theme: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          detail_url?: string | null
+          district?: string | null
+          end_date?: string | null
+          event_time?: string | null
+          event_type?: string | null
+          fee?: string | null
+          id?: string
+          is_free?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          main_image?: string | null
+          organization?: string | null
+          performers?: string | null
+          place?: string | null
+          program_description?: string | null
+          start_date?: string | null
+          target_audience?: string | null
+          theme?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          detail_url?: string | null
+          district?: string | null
+          end_date?: string | null
+          event_time?: string | null
+          event_type?: string | null
+          fee?: string | null
+          id?: string
+          is_free?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          main_image?: string | null
+          organization?: string | null
+          performers?: string | null
+          place?: string | null
+          program_description?: string | null
+          start_date?: string | null
+          target_audience?: string | null
+          theme?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      cultural_spaces: {
+        Row: {
+          address: string | null
+          category: string | null
+          closed_days: string | null
+          created_at: string | null
+          description: string | null
+          district: string | null
+          entrance_fee: string | null
+          homepage: string | null
+          id: string
+          is_free: boolean | null
+          latitude: number | null
+          longitude: number | null
+          main_image: string | null
+          name: string
+          open_hours: string | null
+          phone: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string | null
+          closed_days?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          entrance_fee?: string | null
+          homepage?: string | null
+          id?: string
+          is_free?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          main_image?: string | null
+          name: string
+          open_hours?: string | null
+          phone?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string | null
+          closed_days?: string | null
+          created_at?: string | null
+          description?: string | null
+          district?: string | null
+          entrance_fee?: string | null
+          homepage?: string | null
+          id?: string
+          is_free?: boolean | null
+          latitude?: number | null
+          longitude?: number | null
+          main_image?: string | null
+          name?: string
+          open_hours?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
       family_groups: {
         Row: {
           created_at: string | null
