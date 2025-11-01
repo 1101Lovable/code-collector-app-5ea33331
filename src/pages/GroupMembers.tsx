@@ -166,6 +166,11 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
                           <span className="text-senior-sm">가장</span>
                         </div>
                       )}
+                      {member.user_id !== user?.id && (
+                        <p className="text-senior-sm text-primary cursor-pointer hover:underline mt-1">
+                          캘린더 보기
+                        </p>
+                      )}
                     </div>
                   </div>
 
