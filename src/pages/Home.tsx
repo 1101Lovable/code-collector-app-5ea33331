@@ -273,7 +273,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
                 key={schedule.id}
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex justify-between items-center hover:shadow-md transition-all"
               >
-                <div>
+              <div>
                   {schedule.schedule_time && (
                     <p className="text-primary font-bold text-senior-lg">
                       {formatTime(schedule.schedule_time)}
@@ -281,7 +281,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {schedule.shared_with_family && (
+                {schedule.shared_with_family && schedule.user_id !== user?.id && (
                   <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-senior-sm text-foreground flex-shrink-0 ml-4">
                     <Users size={14} /> 가족
                   </div>

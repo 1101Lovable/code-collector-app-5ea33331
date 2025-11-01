@@ -1,9 +1,10 @@
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import FamilyManagement from "./FamilyManagement";
 
 interface FamilyMember {
   user_id: string;
@@ -13,6 +14,7 @@ interface FamilyMember {
 
 export default function GroupCalendar() {
   const { user } = useAuth();
+  const [showManagement, setShowManagement] = useState(false);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -133,13 +135,28 @@ export default function GroupCalendar() {
 
   const selectedMemberData = familyMembers.find((m) => m.user_id === selectedMember);
 
+  if (showManagement) {
+    return <FamilyManagement onBack={() => setShowManagement(false)} />;
+  }
+
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
       {/* Family Members Selection */}
       <section className="pt-8 pb-4 max-w-2xl mx-auto w-full">
-        <h2 className="text-senior-xl font-bold text-secondary-foreground mb-4">
-          가족 구성원
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">
+            가족 구성원
+          </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowManagement(true)}
+            className="gap-2"
+          >
+            <Settings size={18} />
+            그룹 관리
+          </Button>
+        </div>
         
         {familyMembers.length === 0 ? (
           <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50">

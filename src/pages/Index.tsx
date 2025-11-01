@@ -3,13 +3,14 @@ import { useNavigate } from "react-router-dom";
 import Home from "./Home";
 import ScheduleCalendar from "./ScheduleCalendar";
 import GroupCalendar from "./GroupCalendar";
+import FamilyManagement from "./FamilyManagement";
 import FamilyNews from "./FamilyNews";
 import AddSchedule from "./AddSchedule";
 import CalendarView from "./CalendarView";
 import BottomTabBar from "@/components/BottomTabBar";
 import { useAuth } from "@/contexts/AuthContext";
 
-type View = "home" | "schedule" | "group" | "family" | "add-schedule" | "calendar";
+type View = "home" | "schedule" | "group" | "family-management" | "family" | "add-schedule" | "calendar";
 
 const Index = () => {
   const { user, loading } = useAuth();
