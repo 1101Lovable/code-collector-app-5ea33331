@@ -163,38 +163,42 @@ export default function FamilyNews() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen pb-24 px-6 pt-8">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 px-4 pt-6">
       {/* Family Members Section */}
-      <section className="mb-8">
-        <h2 className="text-senior-xl mb-6 flex items-center gap-3">
-          <Users className="text-primary" />
-          우리 가족 소식
-        </h2>
+      <section className="mb-8 max-w-2xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
+          <h2 className="text-senior-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            우리 가족 소식
+          </h2>
+        </div>
 
         {loading ? (
-          <Card className="p-8 text-center">
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50 shadow-sm">
             <p className="text-senior-base text-muted-foreground">불러오는 중...</p>
-          </Card>
+          </div>
         ) : familyMembers.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-senior-base text-muted-foreground mb-4">
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50 shadow-sm">
+            <p className="text-senior-base text-muted-foreground mb-2">
               아직 가족 그룹이 없어요
             </p>
             <p className="text-senior-sm text-muted-foreground">
               설정에서 가족을 초대해보세요
             </p>
-          </Card>
+          </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {familyMembers.map((member) => (
-              <Card
+              <div
                 key={member.user_id}
-                className={`p-6 shadow-md ${
-                  member.user_id === user?.id ? "border-2 border-primary" : ""
+                className={`bg-card/90 backdrop-blur-sm rounded-2xl p-4 border transition-all hover:shadow-md ${
+                  member.user_id === user?.id 
+                    ? "border-primary/50 shadow-sm shadow-primary/10" 
+                    : "border-border/50"
                 }`}
               >
-                <div className="flex items-center gap-6">
-                  <div className="min-w-[80px] min-h-[80px] bg-secondary rounded-full flex items-center justify-center text-senior-3xl">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
                     {member.avatar_url ? (
                       <img
                         src={member.avatar_url}
@@ -205,107 +209,112 @@ export default function FamilyNews() {
                       "👤"
                     )}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-senior-lg">{member.display_name}</h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-senior-lg truncate">{member.display_name}</h3>
                       {member.user_id === user?.id && (
-                        <span className="text-senior-sm bg-primary/20 px-3 py-1 rounded-full">
+                        <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
                           나
                         </span>
                       )}
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-senior-2xl">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">
                         {getMoodEmoji(member.latest_mood)}
                       </span>
                       <div>
-                        <p className="text-senior-base">
+                        <p className="text-senior-sm">
                           {member.latest_mood
                             ? moods.find((m) => m.id === member.latest_mood)?.label
                             : "기분 미기록"}
                         </p>
-                        <p className="text-senior-sm text-muted-foreground">
+                        <p className="text-senior-xs text-muted-foreground">
                           {getTimeAgo(member.mood_time)}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         )}
       </section>
 
       {/* Mood Sharing Section */}
-      <section className="mb-12">
-        <h1 className="text-senior-2xl mb-3">오늘 기분은 어떠세요?</h1>
-        <p className="text-senior-base text-muted-foreground mb-8">
+      <section className="mb-10 max-w-2xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
+          <h1 className="text-senior-2xl font-bold">오늘 기분은 어떠세요?</h1>
+        </div>
+        <p className="text-senior-sm text-muted-foreground mb-6">
           선택하신 기분은 가족들에게 알려져요
         </p>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           {moods.map((mood) => (
             <Button
               key={mood.id}
               variant="mood"
               size="xl"
               onClick={() => handleMoodSelect(mood.id)}
-              className={`h-[140px] ${
-                selectedMood === mood.id ? "border-primary border-4 bg-secondary" : ""
+              className={`h-28 bg-card/80 backdrop-blur-sm border transition-all hover:scale-[1.02] ${
+                selectedMood === mood.id 
+                  ? "border-primary/50 shadow-lg shadow-primary/20 bg-primary/5" 
+                  : "border-border/50 hover:border-primary/30"
               }`}
             >
-              <span className="text-6xl mb-2">{mood.emoji}</span>
-              <span className="text-senior-lg">{mood.label}</span>
+              <span className="text-5xl mb-1">{mood.emoji}</span>
+              <span className="text-senior-base">{mood.label}</span>
             </Button>
           ))}
         </div>
       </section>
 
       {/* Health Records Section */}
-      <section>
-        <h2 className="text-senior-xl mb-6 flex items-center gap-3">
-          <Activity className="text-primary" />
-          나의 건강 기록하기
-        </h2>
+      <section className="max-w-2xl mx-auto">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
+          <h2 className="text-senior-xl font-bold">나의 건강 기록하기</h2>
+        </div>
         
-        <div className="space-y-4">
+        <div className="space-y-3">
           <Button
             variant="health"
             size="lg"
             onClick={() => handleHealthRecord("혈압")}
-            className="w-full justify-start"
+            className="w-full justify-start bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all hover:shadow-md"
           >
-            <Heart className="text-destructive" size={32} />
-            <span className="text-senior-lg">혈압 기록하기</span>
+            <Heart className="text-destructive" size={24} />
+            <span className="text-senior-base">혈압 기록하기</span>
           </Button>
           
           <Button
             variant="health"
             size="lg"
             onClick={() => handleHealthRecord("혈당")}
-            className="w-full justify-start"
+            className="w-full justify-start bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all hover:shadow-md"
           >
-            <Activity className="text-senior-bad" size={32} />
-            <span className="text-senior-lg">혈당 기록하기</span>
+            <Activity className="text-senior-bad" size={24} />
+            <span className="text-senior-base">혈당 기록하기</span>
           </Button>
           
           <Button
             variant="health"
             size="lg"
             onClick={() => handleHealthRecord("약")}
-            className="w-full justify-start"
+            className="w-full justify-start bg-card/80 backdrop-blur-sm border border-border/50 hover:border-primary/30 transition-all hover:shadow-md"
           >
-            <Pill className="text-accent" size={32} />
-            <span className="text-senior-lg">오늘 드신 약</span>
+            <Pill className="text-accent" size={24} />
+            <span className="text-senior-base">오늘 드신 약</span>
           </Button>
         </div>
 
-        <Card className="mt-8 p-6 bg-accent/10 border-accent">
-          <p className="text-senior-base text-center">
+        <div className="mt-6 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
+          <p className="text-senior-sm text-center">
             💚 건강 정보는 가족과 자동으로 공유돼요
           </p>
-        </Card>
+        </div>
       </section>
     </div>
   );

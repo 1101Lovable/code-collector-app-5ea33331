@@ -126,20 +126,20 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary pb-24 flex flex-col items-center px-6">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
       {/* Weather and Date Section */}
-      <div className="w-full max-w-lg bg-card rounded-3xl shadow-md p-6 mt-6">
-        <div className="flex justify-between items-center text-muted-foreground mb-2">
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm h-auto p-0">
-            <LogOut size={20} />
+      <div className="w-full max-w-2xl bg-card/90 backdrop-blur-sm rounded-3xl shadow-lg border border-border/50 p-5 mt-6">
+        <div className="flex justify-between items-center text-muted-foreground mb-3">
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm h-auto p-0 hover:text-primary transition-colors">
+            <LogOut size={18} />
             <span className="ml-2">로그아웃</span>
           </Button>
           {weather && (
             <div className="flex items-center gap-2">
               {weather.weathercode <= 3 ? (
-                <Sun className="text-primary" size={26} />
+                <Sun className="text-primary" size={24} />
               ) : (
-                <CloudRain className="text-blue-500" size={26} />
+                <CloudRain className="text-blue-500" size={24} />
               )}
               <span className="text-primary font-semibold text-senior-lg">
                 {weather.temperature}°C
@@ -147,41 +147,44 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
             </div>
           )}
         </div>
-        <h1 className="text-senior-3xl font-extrabold text-primary mt-1">
+        <h1 className="text-senior-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
           {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
         </h1>
         {user?.user_metadata?.location_district && (
-          <p className="text-senior-lg text-foreground mt-2">
+          <p className="text-senior-base text-foreground mt-2">
             서울특별시 {user.user_metadata.location_district}
           </p>
         )}
       </div>
 
       {/* Today's Schedule */}
-      <section className="w-full max-w-lg mt-6">
-        <h2 className="text-senior-2xl font-bold text-primary mb-3 flex items-center gap-2">
-          <Calendar size={22} className="text-primary" />
-          오늘의 일정
-        </h2>
+      <section className="w-full max-w-2xl mt-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
+          <h2 className="text-senior-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+            <Calendar size={20} />
+            오늘의 일정
+          </h2>
+        </div>
 
         {schedules.length === 0 ? (
-          <Card className="p-8 text-center border-border">
+          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50">
             <p className="text-senior-base text-muted-foreground">오늘은 일정이 없어요</p>
-          </Card>
+          </div>
         ) : (
           <div className="flex flex-col gap-3">
             {schedules.map((schedule) => (
               <div
                 key={schedule.id}
-                className="bg-card rounded-2xl p-4 shadow-sm border border-border flex justify-between items-center"
+                className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex justify-between items-center hover:shadow-md transition-all"
               >
                 <div>
-                  <p className="text-primary font-bold text-senior-xl">{schedule.time}</p>
-                  <p className="text-foreground text-senior-lg mt-1">{schedule.title}</p>
+                  <p className="text-primary font-bold text-senior-lg">{schedule.time}</p>
+                  <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
                 {schedule.shared && (
-                  <div className="flex items-center gap-1 bg-secondary px-2 py-1 rounded-full text-senior-sm text-foreground">
-                    <Users size={14} /> 가족 공유
+                  <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-senior-sm text-foreground flex-shrink-0 ml-4">
+                    <Users size={14} /> 가족
                   </div>
                 )}
               </div>
@@ -191,24 +194,27 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       </section>
 
       {/* AI Recommendations */}
-      <section className="w-full max-w-lg mt-8 pb-6">
-        <h2 className="text-senior-2xl font-bold text-primary mb-3 flex items-center gap-2">
-          ✨ 오늘 뭐 할까요? 💡
-        </h2>
+      <section className="w-full max-w-2xl mt-8 pb-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
+          <h2 className="text-senior-xl font-bold">
+            ✨ 오늘 뭐 할까요?
+          </h2>
+        </div>
 
         <div className="flex flex-col gap-3">
           {recommendations.map((rec) => (
             <div
               key={rec.id}
-              className="bg-card rounded-2xl p-4 shadow-sm border border-border flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
+              className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
             >
-              <div className="text-primary text-senior-3xl">
+              <div className="text-3xl">
                 {rec.image}
               </div>
               <div>
                 <p className="text-senior-lg font-semibold text-foreground">{rec.title}</p>
-                <p className="text-senior-base text-muted-foreground flex items-center gap-1">
-                  <MapPin size={18} />
+                <p className="text-senior-sm text-muted-foreground flex items-center gap-1">
+                  <MapPin size={16} />
                   {rec.location}
                 </p>
               </div>
@@ -222,7 +228,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
         onClick={onAddSchedule}
-        className="fixed bottom-28 right-10 bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center text-4xl shadow-lg hover:bg-primary/90"
+        className="fixed bottom-28 right-6 bg-gradient-to-br from-primary to-accent text-primary-foreground rounded-full w-14 h-14 flex items-center justify-center text-3xl shadow-lg hover:shadow-xl transition-shadow"
       >
         +
       </motion.button>

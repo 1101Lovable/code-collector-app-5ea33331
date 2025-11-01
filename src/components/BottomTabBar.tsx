@@ -7,26 +7,26 @@ interface BottomTabBarProps {
 
 export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 rounded-t-3xl shadow-inner">
-      <div className="flex justify-around items-center h-20 max-w-screen-lg mx-auto px-4">
+    <nav className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-lg border-t border-border/50 z-50 rounded-t-3xl shadow-lg">
+      <div className="flex justify-around items-center h-16 max-w-screen-lg mx-auto px-4">
         <button
           onClick={() => onTabChange("schedule")}
-          className={`flex flex-col items-center justify-center gap-1 px-6 py-2 transition-colors ${
-            activeTab === "schedule" ? "text-primary font-bold" : "text-muted-foreground"
+          className={`flex flex-col items-center justify-center gap-1 px-6 py-2 transition-all ${
+            activeTab === "schedule" ? "text-primary scale-105" : "text-muted-foreground hover:text-primary/70"
           }`}
         >
-          <Calendar size={22} />
-          <span className="text-senior-sm">오늘 일정</span>
+          <Calendar size={20} />
+          <span className="text-senior-xs">오늘 일정</span>
         </button>
 
         <button
           onClick={() => onTabChange("family")}
-          className={`flex flex-col items-center justify-center gap-1 px-6 py-2 transition-colors ${
-            activeTab === "family" ? "text-primary font-bold" : "text-muted-foreground"
+          className={`flex flex-col items-center justify-center gap-1 px-6 py-2 transition-all ${
+            activeTab === "family" ? "text-primary scale-105" : "text-muted-foreground hover:text-primary/70"
           }`}
         >
-          <Users size={22} />
-          <span className="text-senior-sm">가족 소식</span>
+          <Users size={20} />
+          <span className="text-senior-xs">가족 소식</span>
         </button>
       </div>
     </nav>

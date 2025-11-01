@@ -71,9 +71,9 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-senior;
   }
   
-  /* Base font sizes - all very large for seniors */
+  /* Base font sizes - reduced for modern look */
   html {
-    font-size: 18px;
+    font-size: 16px;
   }
   
   /* Smooth transitions but not too distracting */

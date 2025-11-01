@@ -23,9 +23,9 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background via-background to-secondary/30">
         <div className="text-center">
-          <p className="text-senior-xl text-muted-foreground">불러오는 중...</p>
+          <p className="text-senior-lg text-muted-foreground">불러오는 중...</p>
         </div>
       </div>
     );
@@ -53,20 +53,8 @@ const Index = () => {
     setCurrentView(tab);
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-senior-xl">로딩중...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30">
       {currentView === "schedule" && (
         <TodaySchedule onAddSchedule={handleAddSchedule} userId={user.id} />
       )}
