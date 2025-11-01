@@ -420,8 +420,8 @@ export default function GroupCalendar() {
               familyMembers.map((member) => (
                 <Card
                   key={member.user_id}
-                  className="p-4 cursor-pointer hover:bg-accent/5 transition-colors"
-                  onClick={() => setSelectedMember(member.user_id)}
+                  className={`p-4 transition-colors ${member.user_id !== user?.id ? "cursor-pointer hover:bg-accent/5" : "cursor-default"}`}
+                  onClick={member.user_id !== user?.id ? () => setSelectedMember(member.user_id) : undefined}
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
@@ -447,7 +447,9 @@ export default function GroupCalendar() {
                           </span>
                         )}
                       </div>
-                      <p className="text-senior-sm text-muted-foreground">캘린더 보기</p>
+                      {member.user_id !== user?.id && (
+                        <p className="text-senior-sm text-muted-foreground">캘린더 보기</p>
+                      )}
                     </div>
                     {getMoodEmoji(member.latest_mood) && (
                       <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.latest_mood)}</div>
