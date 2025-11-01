@@ -546,7 +546,6 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
                   }}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="text-3xl flex-shrink-0">✨</div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-senior-lg font-semibold text-foreground mb-1">{rec.title}</h3>
                       <p className="text-senior-sm text-muted-foreground leading-relaxed">{rec.description}</p>
