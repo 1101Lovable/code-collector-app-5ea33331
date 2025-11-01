@@ -35,7 +35,7 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
       // Get all members of this group
       const { data: memberData, error: memberError } = await supabase
         .from("family_members")
-        .select("id, user_id, is_head, mood")
+        .select("id, user_id, is_head")
         .eq("family_group_id", groupId);
 
       if (memberError) throw memberError;
@@ -49,11 +49,11 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
       const userMembership = memberData.find((m) => m.user_id === user?.id);
       setIsUserHead(userMembership?.is_head || false);
 
-      // Get profile details
+      // Get profile details including mood
       const userIds = memberData.map((m) => m.user_id);
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url")
+        .select("id, display_name, avatar_url, mood")
         .in("id", userIds);
 
       if (profileError) throw profileError;
@@ -67,7 +67,7 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
           display_name: profile?.display_name || "Unknown",
           avatar_url: profile?.avatar_url || null,
           is_head: member.is_head,
-          mood: member.mood || null,
+          mood: profile?.mood || null,
         };
       });
 
