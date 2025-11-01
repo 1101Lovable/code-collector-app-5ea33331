@@ -7,7 +7,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (phone: string, password: string, displayName: string, locationCity: string, locationDistrict: string, locationDong: string, phoneNumber: string) => Promise<{ error: any }>;
+  signUp: (phone: string, password: string, displayName: string, gender: string, locationCity: string, locationDistrict: string, locationDong: string, phoneNumber: string) => Promise<{ error: any }>;
   signIn: (phone: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -40,13 +40,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (phone: string, password: string, displayName: string, locationCity: string, locationDistrict: string, locationDong: string, phoneNumber: string) => {
+  const signUp = async (phone: string, password: string, displayName: string, gender: string, locationCity: string, locationDistrict: string, locationDong: string, phoneNumber: string) => {
     const { error } = await supabase.auth.signUp({
       phone,
       password,
       options: {
         data: {
           display_name: displayName,
+          gender: gender,
           location_city: locationCity,
           location_district: locationDistrict,
           location_dong: locationDong,

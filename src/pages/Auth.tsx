@@ -14,6 +14,7 @@ export default function Auth() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [gender, setGender] = useState("");
   const [locationCity, setLocationCity] = useState("");
   const [locationDistrict, setLocationDistrict] = useState("");
   const [locationDong, setLocationDong] = useState("");
@@ -75,6 +76,11 @@ export default function Auth() {
       return;
     }
 
+    if (!isLogin && !gender) {
+      toast.error("성별을 선택해주세요");
+      return;
+    }
+
     if (!isLogin && (!locationCity || !locationDistrict)) {
       toast.error("시/도와 시/군/구를 선택해주세요");
       return;
@@ -84,7 +90,7 @@ export default function Auth() {
       const formattedPhone = `+82${cleanPhone.slice(1)}`; // 010-1234-5678 -> +821012345678
       const { error } = isLogin
         ? await signIn(formattedPhone, password)
-        : await signUp(formattedPhone, password, displayName, locationCity, locationDistrict, locationDong, cleanPhone);
+        : await signUp(formattedPhone, password, displayName, gender, locationCity, locationDistrict, locationDong, cleanPhone);
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
@@ -132,6 +138,28 @@ export default function Auth() {
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="h-16 text-senior-base px-6 border-2"
                 />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="gender" className="text-senior-lg">
+                  성별
+                </Label>
+                <Select
+                  value={gender}
+                  onValueChange={setGender}
+                >
+                  <SelectTrigger className="h-16 text-senior-base px-6 border-2 bg-background">
+                    <SelectValue placeholder="성별을 선택하세요" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background z-50">
+                    <SelectItem value="남" className="text-senior-base py-3">
+                      남
+                    </SelectItem>
+                    <SelectItem value="여" className="text-senior-base py-3">
+                      여
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-3">
