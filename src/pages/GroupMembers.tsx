@@ -95,7 +95,7 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
     const moods: { [key: string]: string } = {
       good: "😊",
       okay: "😐",
-      bad: "😢",
+      bad: "😡",
     };
     return moods[mood] || null;
   };
@@ -108,21 +108,15 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
             <ArrowLeft size={24} />
           </Button>
           <div>
-            <h2 className="text-senior-2xl font-bold text-secondary-foreground">
-              {groupName}
-            </h2>
-            <p className="text-senior-sm text-muted-foreground">
-              구성원 {members.length}명
-            </p>
+            <h2 className="text-senior-2xl font-bold text-secondary-foreground">{groupName}</h2>
+            <p className="text-senior-sm text-muted-foreground">구성원 {members.length}명</p>
           </div>
         </div>
 
         <div className="space-y-3">
           {members.length === 0 ? (
             <Card className="p-8 text-center">
-              <p className="text-senior-base text-muted-foreground">
-                구성원 정보를 불러오는 중입니다...
-              </p>
+              <p className="text-senior-base text-muted-foreground">구성원 정보를 불러오는 중입니다...</p>
             </Card>
           ) : (
             members.map((member) => (
@@ -142,9 +136,7 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-senior-lg font-semibold truncate">
-                          {member.display_name}
-                        </h3>
+                        <h3 className="text-senior-lg font-semibold truncate">{member.display_name}</h3>
                         {member.user_id === user?.id && (
                           <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
                             나
@@ -157,11 +149,9 @@ export default function GroupMembers({ groupId, groupName, onBack, showMood = fa
                         )}
                       </div>
                       {member.user_id !== user?.id && (
-                        <p className="text-senior-sm text-primary cursor-pointer hover:underline mt-1">
-                          캘린더 보기
-                        </p>
-                     )}
-                   </div>
+                        <p className="text-senior-sm text-primary cursor-pointer hover:underline mt-1">캘린더 보기</p>
+                      )}
+                    </div>
                     {showMood && getMoodEmoji(member.mood) && (
                       <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.mood)}</div>
                     )}

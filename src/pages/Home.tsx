@@ -14,7 +14,7 @@ interface WeatherData {
 const moods = [
   { id: "good", emoji: "😊", label: "행복" },
   { id: "okay", emoji: "😐", label: "보통" },
-  { id: "bad", emoji: "😢", label: "나쁨" },
+  { id: "bad", emoji: "😡", label: "나쁨" },
 ];
 
 const districtCoordinates: Record<string, { lat: number; lon: number }> = {
@@ -100,11 +100,7 @@ export default function Home() {
       if (!user) return;
 
       try {
-        const { data, error } = await supabase
-          .from("profiles")
-          .select("mood")
-          .eq("id", user.id)
-          .maybeSingle();
+        const { data, error } = await supabase.from("profiles").select("mood").eq("id", user.id).maybeSingle();
 
         if (error) throw error;
         setCurrentMood(data?.mood || null);
@@ -160,7 +156,8 @@ export default function Home() {
     return `${period} ${displayHour}:${m}`;
   };
 
-  const getDisplayTime = (s: any) => (s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time));
+  const getDisplayTime = (s: any) =>
+    s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time);
   const handleMoodSelect = async (moodId: string) => {
     if (!user || isRecordingMood) return;
 
@@ -193,7 +190,8 @@ export default function Home() {
       <div className="w-full max-w-2xl bg-card/90 backdrop-blur-sm rounded-3xl shadow-lg border border-border/50 p-5 mt-6">
         <div className="flex justify-between items-start mb-3">
           <h1 className="text-senior-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
+            {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}
+            요일
           </h1>
           {weather && (
             <div className="flex items-center gap-2">
