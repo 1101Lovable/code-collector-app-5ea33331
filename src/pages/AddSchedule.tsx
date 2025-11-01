@@ -4,11 +4,16 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toLocalDateString } from "@/lib/utils";
+
+interface FamilyGroup {
+  id: string;
+  name: string;
+}
 
 interface AddScheduleProps {
   onBack: () => void;
@@ -23,7 +28,51 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
   const [date, setDate] = useState(scheduleToEdit?.schedule_date || toLocalDateString(new Date()));
   const [time, setTime] = useState(scheduleToEdit?.schedule_time || "");
   const [isSaving, setIsSaving] = useState(false);
+  const [familyGroups, setFamilyGroups] = useState<FamilyGroup[]>([]);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(scheduleToEdit?.family_group_id || null);
   const isEditing = !!scheduleToEdit;
+
+  useEffect(() => {
+    fetchFamilyGroups();
+  }, [user]);
+
+  const fetchFamilyGroups = async () => {
+    if (!user) return;
+
+    try {
+      // Get all family groups the user is a member of
+      const { data: memberships, error: membershipError } = await supabase
+        .from("family_members")
+        .select("family_group_id")
+        .eq("user_id", user.id);
+
+      if (membershipError) throw membershipError;
+
+      if (!memberships || memberships.length === 0) {
+        setFamilyGroups([]);
+        return;
+      }
+
+      const groupIds = memberships.map((m) => m.family_group_id);
+
+      // Get group details
+      const { data: groups, error: groupsError } = await supabase
+        .from("family_groups")
+        .select("id, name")
+        .in("id", groupIds);
+
+      if (groupsError) throw groupsError;
+
+      setFamilyGroups(groups || []);
+      
+      // If there's only one group, auto-select it when sharing is enabled
+      if (groups && groups.length === 1 && shareWithFamily) {
+        setSelectedGroupId(groups[0].id);
+      }
+    } catch (error: any) {
+      console.error("Error fetching family groups:", error);
+    }
+  };
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -45,21 +94,18 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       const startTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T00:00:00`;
       const endTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T23:59:59`;
 
-      // Determine family group id if sharing
-      let familyGroupId: string | null = null;
+      // Validate group selection if sharing
       if (shareWithFamily) {
-        const { data: fm, error: fmError } = await supabase
-          .from("family_members")
-          .select("family_group_id")
-          .eq("user_id", user.id)
-          .maybeSingle();
-        if (fmError) throw fmError;
-        if (!fm?.family_group_id) {
+        if (!selectedGroupId) {
+          toast.error("공유할 그룹을 선택해주세요");
+          setIsSaving(false);
+          return;
+        }
+        if (familyGroups.length === 0) {
           toast.error("그룹이 없어서 공유할 수 없어요");
           setIsSaving(false);
           return;
         }
-        familyGroupId = fm.family_group_id;
       }
 
       const scheduleData = {
@@ -68,8 +114,8 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
         schedule_time: cleanTime || null,
         start_time: startTime,
         end_time: endTime,
-        family_id: shareWithFamily ? familyGroupId : null,
-        family_group_id: shareWithFamily ? familyGroupId : null,
+        family_id: shareWithFamily ? selectedGroupId : null,
+        family_group_id: shareWithFamily ? selectedGroupId : null,
         shared_with_family: !!shareWithFamily,
       };
 
@@ -166,7 +212,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
         {/* Family Sharing Toggle */}
         <Card className="p-6 border-2 border-accent/30 bg-accent/5">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <Share2 className="text-accent" size={32} />
@@ -174,10 +220,58 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
                   이 일정을 그룹에게 공유할까요?
                 </Label>
               </div>
-              <p className="text-senior-sm text-muted-foreground pl-11">그룹들이 일정을 함께 볼 수 있어요</p>
+              <p className="text-senior-sm text-muted-foreground pl-11">선택한 그룹이 일정을 함께 볼 수 있어요</p>
             </div>
-            <Switch id="share" checked={shareWithFamily} onCheckedChange={setShareWithFamily} className="scale-150" />
+            <Switch 
+              id="share" 
+              checked={shareWithFamily} 
+              onCheckedChange={(checked) => {
+                setShareWithFamily(checked);
+                // Auto-select first group if only one exists
+                if (checked && familyGroups.length === 1) {
+                  setSelectedGroupId(familyGroups[0].id);
+                }
+              }} 
+              className="scale-150" 
+            />
           </div>
+
+          {/* Group Selection */}
+          {shareWithFamily && familyGroups.length > 0 && (
+            <div className="space-y-3 mt-4 pt-4 border-t border-border/50">
+              <Label className="text-senior-base text-muted-foreground">공유할 그룹 선택:</Label>
+              <div className="space-y-2">
+                {familyGroups.map((group) => (
+                  <div
+                    key={group.id}
+                    onClick={() => setSelectedGroupId(group.id)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      selectedGroupId === group.id
+                        ? "border-primary bg-primary/10"
+                        : "border-border hover:border-primary/50 hover:bg-accent/5"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-senior-base font-semibold">{group.name}</span>
+                      {selectedGroupId === group.id && (
+                        <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                          <div className="w-3 h-3 rounded-full bg-primary-foreground"></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {shareWithFamily && familyGroups.length === 0 && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-senior-sm text-muted-foreground text-center">
+                그룹이 없습니다. 먼저 그룹을 만들어주세요.
+              </p>
+            </div>
+          )}
         </Card>
       </div>
 
