@@ -82,15 +82,61 @@ export default function Home() {
 
       try {
         const today = toLocalDateString(new Date());
-        const { data, error } = await supabase
+
+        // 1) 오늘 내가 볼 수 있는 일정 전체(내 일정 + 공유 일정) 조회
+        const { data: baseSchedules, error: schedError } = await supabase
           .from("schedules")
           .select("*")
           .eq("schedule_date", today)
           .order("schedule_time", { ascending: true });
 
-        if (error) throw error;
+        if (schedError) throw schedError;
 
-        setSchedules(data || []);
+        // 2) 내가 속한 그룹 조회
+        const { data: memberships } = await supabase
+          .from("family_members")
+          .select("family_group_id")
+          .eq("user_id", user.id);
+
+        let enriched = baseSchedules || [];
+
+        if (memberships && memberships.length > 0 && enriched.length > 0) {
+          const groupIds = memberships.map((m) => m.family_group_id);
+          const scheduleIds = enriched.map((s) => s.id);
+
+          // 3) 해당 일정들 중 내가 속한 그룹과의 공유 관계 조회
+          const { data: shares } = await supabase
+            .from("schedule_family_shares")
+            .select("schedule_id, family_group_id")
+            .in("family_group_id", groupIds)
+            .in("schedule_id", scheduleIds);
+
+          // 4) 그룹 이름 맵 구성
+          const { data: groups } = await supabase
+            .from("family_groups")
+            .select("id, name")
+            .in("id", groupIds);
+
+          const groupMap = new Map(groups?.map((g) => [g.id, g.name]) || []);
+
+          // schedule_id -> [family_group_id]
+          const sharesBySchedule: Record<string, string[]> = {};
+          (shares || []).forEach((s) => {
+            if (!sharesBySchedule[s.schedule_id]) sharesBySchedule[s.schedule_id] = [];
+            sharesBySchedule[s.schedule_id].push(s.family_group_id);
+          });
+
+          // 5) 배지 라벨(첫 그룹명 + " 외 n") 계산하여 주입(내 일정 제외)
+          enriched = enriched.map((s) => {
+            if (s.user_id === user.id) return s;
+            const ids = sharesBySchedule[s.id] || [];
+            const names = ids.map((id) => groupMap.get(id)).filter((n): n is string => !!n);
+            const label = names.length > 0 ? `${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}` : ""}` : null;
+            return { ...s, group_label: label };
+          });
+        }
+
+        setSchedules(enriched);
       } catch (error) {
         console.error("일정을 가져오는데 실패했습니다:", error);
       }
@@ -234,9 +280,9 @@ export default function Home() {
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {schedule.family_id && schedule.user_id !== user?.id && (
+                {user && schedule.user_id !== user.id && schedule.group_label && (
                   <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-senior-sm text-foreground flex-shrink-0 ml-4">
-                    <Users size={14} /> 그룹
+                    <Users size={14} /> {schedule.group_label}
                   </div>
                 )}
               </div>
