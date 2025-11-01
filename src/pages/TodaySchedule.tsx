@@ -8,6 +8,15 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
 import { toLocalDateString } from "@/lib/utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface TodayScheduleProps {
   onAddSchedule: () => void;
@@ -77,6 +86,10 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   const { user } = useAuth();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
+  const [selectedRecommendation, setSelectedRecommendation] = useState<any>(null);
+  const [addScheduleDate, setAddScheduleDate] = useState(toLocalDateString(new Date()));
+  const [addScheduleTime, setAddScheduleTime] = useState("");
+  const [isAddingSchedule, setIsAddingSchedule] = useState(false);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -108,8 +121,8 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       const district = user.user_metadata.location_district;
 
       try {
-        // Fetch cultural events for the user's district
-        const { data: events, error } = await supabase
+        // Fetch cultural events
+        const { data: events, error: eventsError } = await supabase
           .from("cultural_events")
           .select("*")
           .eq("district", district)
@@ -117,7 +130,18 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           .order("start_date", { ascending: true })
           .limit(2);
 
-        if (error) throw error;
+        if (eventsError) throw eventsError;
+
+        // Fetch cultural spaces
+        const { data: spaces, error: spacesError } = await supabase
+          .from("cultural_spaces")
+          .select("*")
+          .eq("district", district)
+          .limit(1);
+
+        if (spacesError) throw spacesError;
+
+        const allRecommendations = [];
 
         if (events && events.length > 0) {
           const formattedEvents = events.map((event) => ({
@@ -128,7 +152,23 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
             image: getEventIcon(event.event_type),
             data: event,
           }));
-          setRecommendations(formattedEvents);
+          allRecommendations.push(...formattedEvents);
+        }
+
+        if (spaces && spaces.length > 0) {
+          const formattedSpaces = spaces.map((space) => ({
+            id: space.id,
+            type: "space",
+            title: space.name,
+            location: space.address || district,
+            image: "🏛️",
+            data: space,
+          }));
+          allRecommendations.push(...formattedSpaces);
+        }
+
+        if (allRecommendations.length > 0) {
+          setRecommendations(allRecommendations);
         } else {
           // Fallback to default recommendations
           setRecommendations([
@@ -293,6 +333,41 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
     }
   };
 
+  const handleAddRecommendationToSchedule = async () => {
+    if (!user || !selectedRecommendation) return;
+
+    setIsAddingSchedule(true);
+    try {
+      const cleanTime = addScheduleTime ? addScheduleTime.split(":").slice(0, 2).join(":") : null;
+      const startTime = cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T00:00:00`;
+      const endTime = cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T23:59:59`;
+
+      const { error } = await supabase.from("schedules").insert({
+        user_id: user.id,
+        title: selectedRecommendation.title,
+        location: selectedRecommendation.location,
+        schedule_date: addScheduleDate,
+        schedule_time: cleanTime,
+        start_time: startTime,
+        end_time: endTime,
+        event_type: selectedRecommendation.type === "event" ? selectedRecommendation.data?.event_type : "문화공간",
+        description: selectedRecommendation.data?.program_description || selectedRecommendation.data?.description,
+      });
+
+      if (error) throw error;
+
+      toast.success("일정에 추가되었습니다!");
+      setSelectedRecommendation(null);
+      setAddScheduleDate(toLocalDateString(new Date()));
+      setAddScheduleTime("");
+    } catch (error) {
+      console.error("일정 추가 오류:", error);
+      toast.error("일정 추가에 실패했습니다");
+    } finally {
+      setIsAddingSchedule(false);
+    }
+  };
+
   const today = new Date();
   const [recommendations, setRecommendations] = useState<any[]>([]);
 
@@ -400,12 +475,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
             {recommendations.map((rec) => (
               <div
                 key={rec.id}
-                className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
-                onClick={() => {
-                  if (rec.data?.detail_url) {
-                    window.open(rec.data.detail_url, "_blank");
-                  }
-                }}
+                className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4"
               >
                 <div className="text-3xl flex-shrink-0">{rec.image}</div>
                 <div className="flex-1 min-w-0">
@@ -420,11 +490,65 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                     </span>
                   )}
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedRecommendation(rec)}
+                  className="flex-shrink-0"
+                >
+                  일정 추가
+                </Button>
               </div>
             ))}
           </div>
         )}
       </section>
+
+      {/* Add to Schedule Dialog */}
+      <Dialog open={!!selectedRecommendation} onOpenChange={(open) => !open && setSelectedRecommendation(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-senior-xl">일정 추가</DialogTitle>
+            <DialogDescription className="text-senior-base">
+              {selectedRecommendation?.title}을(를) 일정에 추가합니다
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="schedule-date" className="text-senior-lg">
+                날짜
+              </Label>
+              <Input
+                id="schedule-date"
+                type="date"
+                className="h-14 text-senior-base px-4"
+                value={addScheduleDate}
+                onChange={(e) => setAddScheduleDate(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="schedule-time" className="text-senior-lg">
+                시간 (선택)
+              </Label>
+              <Input
+                id="schedule-time"
+                type="time"
+                className="h-14 text-senior-base px-4"
+                value={addScheduleTime}
+                onChange={(e) => setAddScheduleTime(e.target.value)}
+              />
+            </div>
+            <Button
+              size="xl"
+              onClick={handleAddRecommendationToSchedule}
+              disabled={isAddingSchedule}
+              className="w-full"
+            >
+              {isAddingSchedule ? "추가 중..." : "일정에 추가"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Floating Action Button */}
       <motion.button
