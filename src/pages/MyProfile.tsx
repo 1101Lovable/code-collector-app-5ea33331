@@ -47,11 +47,35 @@ export default function MyProfile() {
         .from("profiles")
         .select("*")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
-      setProfile(data);
-      setEditedProfile(data);
+
+      // If profile doesn't exist, create it
+      if (!data) {
+        const newProfile = {
+          id: user.id,
+          display_name: user.user_metadata?.display_name || "사용자",
+          phone_number: user.user_metadata?.phone_number || "",
+          location_city: user.user_metadata?.location_city || "",
+          location_district: user.user_metadata?.location_district || "",
+          location_dong: user.user_metadata?.location_dong || "",
+          mood: null,
+          avatar_url: null,
+        };
+
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert(newProfile);
+
+        if (insertError) throw insertError;
+
+        setProfile(newProfile);
+        setEditedProfile(newProfile);
+      } else {
+        setProfile(data);
+        setEditedProfile(data);
+      }
     } catch (error) {
       console.error("Error loading profile:", error);
       toast.error("프로필을 불러오는 중 오류가 발생했습니다");
