@@ -333,6 +333,12 @@ export type Database = {
     }
     Functions: {
       generate_invite_code: { Args: never; Returns: string }
+      user_family_groups: {
+        Args: { _user_id: string }
+        Returns: {
+          family_group_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
