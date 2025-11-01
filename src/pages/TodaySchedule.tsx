@@ -19,31 +19,31 @@ interface WeatherData {
 
 // 한국 주요 지역 좌표 매핑
 const districtCoordinates: Record<string, { lat: number; lon: number }> = {
-  "종로구": { lat: 37.5735, lon: 126.9792 },
-  "중구": { lat: 37.5641, lon: 126.9979 },
-  "용산구": { lat: 37.5326, lon: 126.9900 },
-  "성동구": { lat: 37.5634, lon: 127.0371 },
-  "광진구": { lat: 37.5388, lon: 127.0824 },
-  "동대문구": { lat: 37.5744, lon: 127.0398 },
-  "중랑구": { lat: 37.6065, lon: 127.0927 },
-  "성북구": { lat: 37.5894, lon: 127.0167 },
-  "강북구": { lat: 37.6396, lon: 127.0254 },
-  "도봉구": { lat: 37.6688, lon: 127.0469 },
-  "노원구": { lat: 37.6543, lon: 127.0568 },
-  "은평구": { lat: 37.6176, lon: 126.9227 },
-  "서대문구": { lat: 37.5791, lon: 126.9368 },
-  "마포구": { lat: 37.5663, lon: 126.9019 },
-  "양천구": { lat: 37.5172, lon: 126.8664 },
-  "강서구": { lat: 37.5509, lon: 126.8495 },
-  "구로구": { lat: 37.4954, lon: 126.8874 },
-  "금천구": { lat: 37.4567, lon: 126.8956 },
-  "영등포구": { lat: 37.5264, lon: 126.8963 },
-  "동작구": { lat: 37.5124, lon: 126.9394 },
-  "관악구": { lat: 37.4781, lon: 126.9515 },
-  "서초구": { lat: 37.4837, lon: 127.0324 },
-  "강남구": { lat: 37.5172, lon: 127.0473 },
-  "송파구": { lat: 37.5145, lon: 127.1059 },
-  "강동구": { lat: 37.5301, lon: 127.1238 },
+  종로구: { lat: 37.5735, lon: 126.9792 },
+  중구: { lat: 37.5641, lon: 126.9979 },
+  용산구: { lat: 37.5326, lon: 126.99 },
+  성동구: { lat: 37.5634, lon: 127.0371 },
+  광진구: { lat: 37.5388, lon: 127.0824 },
+  동대문구: { lat: 37.5744, lon: 127.0398 },
+  중랑구: { lat: 37.6065, lon: 127.0927 },
+  성북구: { lat: 37.5894, lon: 127.0167 },
+  강북구: { lat: 37.6396, lon: 127.0254 },
+  도봉구: { lat: 37.6688, lon: 127.0469 },
+  노원구: { lat: 37.6543, lon: 127.0568 },
+  은평구: { lat: 37.6176, lon: 126.9227 },
+  서대문구: { lat: 37.5791, lon: 126.9368 },
+  마포구: { lat: 37.5663, lon: 126.9019 },
+  양천구: { lat: 37.5172, lon: 126.8664 },
+  강서구: { lat: 37.5509, lon: 126.8495 },
+  구로구: { lat: 37.4954, lon: 126.8874 },
+  금천구: { lat: 37.4567, lon: 126.8956 },
+  영등포구: { lat: 37.5264, lon: 126.8963 },
+  동작구: { lat: 37.5124, lon: 126.9394 },
+  관악구: { lat: 37.4781, lon: 126.9515 },
+  서초구: { lat: 37.4837, lon: 127.0324 },
+  강남구: { lat: 37.5172, lon: 127.0473 },
+  송파구: { lat: 37.5145, lon: 127.1059 },
+  강동구: { lat: 37.5301, lon: 127.1238 },
 };
 
 // 날씨 코드를 이모지로 변환
@@ -68,14 +68,14 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       if (!user?.user_metadata?.location_district) return;
 
       const district = user.user_metadata.location_district;
-      const coords = districtCoordinates[district] || { lat: 37.5665, lon: 126.9780 }; // 기본값: 서울시청
+      const coords = districtCoordinates[district] || { lat: 37.5665, lon: 126.978 }; // 기본값: 서울시청
 
       try {
         const response = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true`
+          `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true`,
         );
         const data = await response.json();
-        
+
         if (data.current_weather) {
           setWeather({
             temperature: Math.round(data.current_weather.temperature),
@@ -141,9 +141,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               요일
             </h1>
             {user?.user_metadata?.location_district && (
-              <p className="text-senior-lg text-muted-foreground">
-                📍 {user.user_metadata.location_district}
-              </p>
+              <p className="text-senior-lg text-muted-foreground">{user.user_metadata.location_district}</p>
             )}
           </div>
           {weather && (
