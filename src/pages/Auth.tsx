@@ -79,8 +79,8 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-6 py-12 bg-gradient-to-br from-primary/10 to-accent/10">
-      <Card className="w-full max-w-md p-8 shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center px-6 py-12 bg-gradient-to-br from-muted via-background to-accent/20">
+      <Card className="w-full max-w-md p-8 shadow-2xl border-2">
         <div className="text-center mb-8">
           <h1 className="text-senior-2xl mb-3">
             {isLogin ? "로그인" : "회원가입"}
