@@ -176,7 +176,7 @@ export default function GroupCalendar() {
   };
 
   const fetchMemberSchedules = async () => {
-    if (!selectedMember) return;
+    if (!selectedMember || !selectedGroup) return;
 
     try {
       const year = currentDate.getFullYear();
@@ -184,21 +184,38 @@ export default function GroupCalendar() {
       const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
       const endDate = `${year}-${String(month).padStart(2, "0")}-${daysInMonth}`;
 
-      const scheduleQuery = supabase
+      // 1) 선택된 멤버의 해당 월 일정 조회
+      const { data: allSchedules, error: schedError } = await supabase
         .from("schedules")
         .select("*")
         .eq("user_id", selectedMember)
-        .not("family_id", "is", null)
         .gte("schedule_date", startDate)
         .lte("schedule_date", endDate);
 
-      const result: any = await scheduleQuery;
-      const { data, error } = result;
+      if (schedError) throw schedError;
 
-      if (error) throw error;
+      // 2) 선택된 그룹과 공유된 일정 필터링
+      if (!allSchedules || allSchedules.length === 0) {
+        setMonthSchedules({});
+        return;
+      }
+
+      const scheduleIds = allSchedules.map((s) => s.id);
+
+      // 3) 선택된 그룹과 공유된 일정 ID 조회
+      const { data: shares } = await supabase
+        .from("schedule_family_shares")
+        .select("schedule_id")
+        .eq("family_group_id", selectedGroup.id)
+        .in("schedule_id", scheduleIds);
+
+      const sharedScheduleIds = new Set(shares?.map((s) => s.schedule_id) || []);
+
+      // 4) 공유된 일정만 필터링
+      const sharedSchedules = allSchedules.filter((s) => sharedScheduleIds.has(s.id));
 
       const schedulesByDate: { [key: string]: any[] } = {};
-      data?.forEach((schedule) => {
+      sharedSchedules.forEach((schedule) => {
         const day = parseInt(schedule.schedule_date.split("-")[2], 10);
         if (!schedulesByDate[day]) {
           schedulesByDate[day] = [];
