@@ -12,6 +12,7 @@ interface GroupMember {
   display_name: string;
   avatar_url: string | null;
   is_head: boolean;
+  mood: string | null;
 }
 
 interface GroupMembersProps {
@@ -34,7 +35,7 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
       // Get all members of this group
       const { data: memberData, error: memberError } = await supabase
         .from("family_members")
-        .select("id, user_id, is_head")
+        .select("id, user_id, is_head, mood")
         .eq("family_group_id", groupId);
 
       if (memberError) throw memberError;
@@ -66,6 +67,7 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
           display_name: profile?.display_name || "Unknown",
           avatar_url: profile?.avatar_url || null,
           is_head: member.is_head,
+          mood: member.mood || null,
         };
       });
 
@@ -107,6 +109,16 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
       console.error("가장 지정 오류:", error);
       toast.error("가장 지정에 실패했습니다");
     }
+  };
+
+  const getMoodEmoji = (mood: string | null) => {
+    if (!mood) return null;
+    const moods: { [key: string]: string } = {
+      good: "😊",
+      okay: "😐",
+      bad: "😢",
+    };
+    return moods[mood] || null;
   };
 
   return (
@@ -172,6 +184,9 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
                         </p>
                       )}
                     </div>
+                    {getMoodEmoji(member.mood) && (
+                      <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.mood)}</div>
+                    )}
                   </div>
 
                   {isUserHead && !member.is_head && (
