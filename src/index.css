@@ -18,9 +18,9 @@ All colors MUST be HSL.
     --popover: 45 40% 98%;
     --popover-foreground: 220 90% 15%;
 
-    /* Deep navy blue for primary actions - high visibility */
-    --primary: 220 90% 25%;
-    --primary-foreground: 45 40% 98%;
+    /* Deep navy blue for primary actions - improved contrast */
+    --primary: 220 95% 20%;
+    --primary-foreground: 0 0% 100%;
 
     /* Soft blue for secondary actions */
     --secondary: 210 60% 85%;
