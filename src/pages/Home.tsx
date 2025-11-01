@@ -1,6 +1,5 @@
-import { LogOut, Sun, CloudRain, Users, Plus } from "lucide-react";
+import { Sun, CloudRain, Users, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
@@ -47,7 +46,6 @@ const districtCoordinates: Record<string, { lat: number; lon: number }> = {
 };
 
 export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
@@ -143,16 +141,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     };
   }, [user]);
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("로그아웃에 실패했어요");
-    } else {
-      toast.success("로그아웃 되었어요");
-      navigate("/auth");
-    }
-  };
-
   const today = new Date();
 
   const formatTime = (time: string | null) => {
@@ -192,16 +180,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
       {/* Weather and Date Section */}
       <div className="w-full max-w-2xl bg-card/90 backdrop-blur-sm rounded-3xl shadow-lg border border-border/50 p-5 mt-6">
-        <div className="flex justify-between items-center text-muted-foreground mb-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-senior-sm h-auto p-0 hover:text-primary transition-colors"
-          >
-            <LogOut size={18} />
-            <span className="ml-2">로그아웃</span>
-          </Button>
+        <div className="flex justify-end items-center text-muted-foreground mb-3">
           {weather && (
             <div className="flex items-center gap-2">
               {weather.weathercode <= 3 ? (

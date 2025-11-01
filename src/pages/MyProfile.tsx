@@ -223,9 +223,9 @@ export default function MyProfile() {
 
         <Button
           onClick={signOut}
-          variant="destructive"
+          variant="ghost"
           size="lg"
-          className="w-full"
+          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
         >
           <LogOut className="mr-2" />
           로그아웃
