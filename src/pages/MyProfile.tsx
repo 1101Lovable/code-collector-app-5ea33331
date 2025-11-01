@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { LogOut, User, MapPin, Phone, Smile, Edit2, Save } from "lucide-react";
+import { LogOut, MapPin, Phone, Edit2, Save } from "lucide-react";
 import { toast } from "sonner";
 
 // Format phone number for display
@@ -25,7 +25,6 @@ interface Profile {
   location_city: string;
   location_district: string;
   location_dong: string;
-  mood: string;
   avatar_url: string;
 }
 
@@ -35,14 +34,6 @@ export default function MyProfile() {
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editedProfile, setEditedProfile] = useState<Profile | null>(null);
-
-  const moods = [
-    { value: "great", label: "😊 아주 좋아요", emoji: "😊" },
-    { value: "good", label: "🙂 좋아요", emoji: "🙂" },
-    { value: "okay", label: "😐 그저 그래요", emoji: "😐" },
-    { value: "bad", label: "😔 안 좋아요", emoji: "😔" },
-    { value: "terrible", label: "😢 매우 안 좋아요", emoji: "😢" },
-  ];
 
   useEffect(() => {
     loadProfile();
@@ -69,7 +60,6 @@ export default function MyProfile() {
           location_city: user.user_metadata?.location_city || "",
           location_district: user.user_metadata?.location_district || "",
           location_dong: user.user_metadata?.location_dong || "",
-          mood: null,
           avatar_url: null,
         };
 
@@ -104,8 +94,6 @@ export default function MyProfile() {
           location_city: editedProfile.location_city,
           location_district: editedProfile.location_district,
           location_dong: editedProfile.location_dong,
-          mood: editedProfile.mood,
-          mood_updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
 
@@ -140,8 +128,6 @@ export default function MyProfile() {
       </div>
     );
   }
-
-  const currentMood = moods.find(m => m.value === (isEditing ? editedProfile?.mood : profile.mood));
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-8">
@@ -198,35 +184,6 @@ export default function MyProfile() {
           <div className="space-y-4">
             <div>
               <Label className="flex items-center gap-2 mb-2 text-senior-base">
-                <Smile size={18} />
-                현재 기분
-              </Label>
-              {isEditing ? (
-                <Select
-                  value={editedProfile?.mood || ""}
-                  onValueChange={(value) => setEditedProfile(prev => prev ? {...prev, mood: value} : null)}
-                >
-                  <SelectTrigger className="h-14 text-senior-base border-2">
-                    <SelectValue placeholder="기분을 선택하세요" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-background">
-                    {moods.map((mood) => (
-                      <SelectItem key={mood.value} value={mood.value} className="text-senior-base py-3">
-                        {mood.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <div className="flex items-center gap-2 p-4 rounded-lg bg-muted/50 border-2">
-                  <span className="text-senior-2xl">{currentMood?.emoji || "😐"}</span>
-                  <span className="text-senior-base">{currentMood?.label || "설정 안 됨"}</span>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <Label className="flex items-center gap-2 mb-2 text-senior-base">
                 <MapPin size={18} />
                 거주지
               </Label>
@@ -267,7 +224,7 @@ export default function MyProfile() {
         <Button
           onClick={signOut}
           variant="destructive"
-          size="xl"
+          size="lg"
           className="w-full"
         >
           <LogOut className="mr-2" />
