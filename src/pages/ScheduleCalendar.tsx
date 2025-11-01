@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, MapPin, Trash2, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Trash2, Users, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -17,7 +17,11 @@ const getEventIcon = (eventType: string | null): string => {
   return "🎪";
 };
 
-export default function ScheduleCalendar() {
+interface ScheduleCalendarProps {
+  onEditSchedule?: (schedule: any) => void;
+}
+
+export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarProps = {}) {
   const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -121,7 +125,7 @@ export default function ScheduleCalendar() {
 
       const schedulesByDate: { [key: string]: any[] } = {};
       allSchedules.forEach((schedule) => {
-        const day = new Date(schedule.schedule_date).getDate();
+        const day = parseInt(schedule.schedule_date.split('-')[2], 10);
         if (!schedulesByDate[day]) {
           schedulesByDate[day] = [];
         }
@@ -383,14 +387,24 @@ export default function ScheduleCalendar() {
                   )}
                 </div>
                 {schedule.user_id === user?.id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteSchedule(schedule.id)}
-                    className="text-destructive hover:bg-destructive/10 flex-shrink-0 ml-2"
-                  >
-                    <Trash2 size={20} />
-                  </Button>
+                  <div className="flex gap-2 flex-shrink-0 ml-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => onEditSchedule?.(schedule)}
+                      className="text-primary hover:bg-primary/10"
+                    >
+                      <Edit2 size={20} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteSchedule(schedule.id)}
+                      className="text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 size={20} />
+                    </Button>
+                  </div>
                 )}
               </div>
             ))}

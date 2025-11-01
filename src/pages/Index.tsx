@@ -18,6 +18,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"home" | "schedule" | "group" | "profile">("home");
   const [currentView, setCurrentView] = useState<View>("home");
+  const [editingSchedule, setEditingSchedule] = useState<any>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -40,6 +41,12 @@ const Index = () => {
   }
 
   const handleAddSchedule = () => {
+    setEditingSchedule(null);
+    setCurrentView("add-schedule");
+  };
+
+  const handleEditSchedule = (schedule: any) => {
+    setEditingSchedule(schedule);
     setCurrentView("add-schedule");
   };
 
@@ -48,6 +55,7 @@ const Index = () => {
   };
 
   const handleBackToHome = () => {
+    setEditingSchedule(null);
     setCurrentView("home");
     setActiveTab("home");
   };
@@ -63,7 +71,7 @@ const Index = () => {
         <Home onAddSchedule={handleAddSchedule} />
       )}
       
-      {currentView === "schedule" && <ScheduleCalendar />}
+      {currentView === "schedule" && <ScheduleCalendar onEditSchedule={handleEditSchedule} />}
       
       {currentView === "group" && <GroupCalendar />}
       
@@ -73,6 +81,7 @@ const Index = () => {
         <AddSchedule
           onBack={handleBackToHome}
           onViewCalendar={handleViewCalendar}
+          scheduleToEdit={editingSchedule}
         />
       )}
       

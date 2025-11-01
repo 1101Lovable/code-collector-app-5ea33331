@@ -200,7 +200,7 @@ export default function GroupCalendar() {
 
       const schedulesByDate: { [key: string]: any[] } = {};
       data?.forEach((schedule) => {
-        const day = new Date(schedule.schedule_date).getDate();
+        const day = parseInt(schedule.schedule_date.split('-')[2], 10);
         if (!schedulesByDate[day]) {
           schedulesByDate[day] = [];
         }

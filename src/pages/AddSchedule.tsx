@@ -12,15 +12,17 @@ import { useAuth } from "@/contexts/AuthContext";
 interface AddScheduleProps {
   onBack: () => void;
   onViewCalendar: () => void;
+  scheduleToEdit?: any;
 }
 
-export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps) {
+export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: AddScheduleProps) {
   const { user } = useAuth();
-  const [shareWithFamily, setShareWithFamily] = useState(false);
-  const [title, setTitle] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [time, setTime] = useState("");
+  const [shareWithFamily, setShareWithFamily] = useState(scheduleToEdit?.family_id ? true : false);
+  const [title, setTitle] = useState(scheduleToEdit?.title || "");
+  const [date, setDate] = useState(scheduleToEdit?.schedule_date || new Date().toISOString().split("T")[0]);
+  const [time, setTime] = useState(scheduleToEdit?.schedule_time || "");
   const [isSaving, setIsSaving] = useState(false);
+  const isEditing = !!scheduleToEdit;
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -40,18 +42,33 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
       const startTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
       const endTime = time ? `${date}T${time}:00` : `${date}T23:59:59`;
 
-      const { error } = await supabase.from("schedules").insert({
-        user_id: user.id,
+      const scheduleData = {
         title: title.trim(),
         schedule_date: date,
+        schedule_time: time || null,
         start_time: startTime,
         end_time: endTime,
-        family_id: shareWithFamily ? user.id : null, // Temporary: use actual family group ID
-      });
+        family_id: shareWithFamily ? user.id : null,
+      };
+
+      let error;
+      if (isEditing) {
+        const result = await supabase
+          .from("schedules")
+          .update(scheduleData)
+          .eq("id", scheduleToEdit.id);
+        error = result.error;
+      } else {
+        const result = await supabase.from("schedules").insert({
+          ...scheduleData,
+          user_id: user.id,
+        });
+        error = result.error;
+      }
 
       if (error) throw error;
 
-      toast.success("일정이 추가되었어요!", {
+      toast.success(isEditing ? "일정이 수정되었어요!" : "일정이 추가되었어요!", {
         description: shareWithFamily ? "그룹들에게도 알려드렸어요" : undefined,
         duration: 3000,
       });
@@ -80,7 +97,7 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
           >
             <ArrowLeft size={32} />
           </Button>
-          <h1 className="text-senior-2xl">일정 추가</h1>
+          <h1 className="text-senior-2xl">{isEditing ? "일정 수정" : "일정 추가"}</h1>
         </div>
       </header>
 
@@ -150,7 +167,7 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
         </Button>
 
         <Button size="xl" onClick={handleSave} className="w-full" disabled={isSaving}>
-          {isSaving ? "저장 중..." : "일정 저장하기"}
+          {isSaving ? "저장 중..." : isEditing ? "일정 수정하기" : "일정 저장하기"}
         </Button>
       </div>
     </div>
