@@ -483,12 +483,8 @@ export default function GroupCalendar() {
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
       <section className="pt-8 pb-4 max-w-2xl mx-auto w-full">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
           <h2 className="text-senior-2xl font-bold text-secondary-foreground">내 그룹</h2>
-          <Button variant="outline" size="sm" onClick={() => setShowManagement(true)} className="gap-2">
-            <Settings size={18} />
-            그룹 관리
-          </Button>
         </div>
 
         {myGroups.length === 0 ? (
@@ -517,6 +513,16 @@ export default function GroupCalendar() {
             ))}
           </div>
         )}
+
+        <Card 
+          className="p-4 mt-3 transition-colors cursor-pointer hover:bg-accent/5 border-2 border-dashed"
+          onClick={() => setShowManagement(true)}
+        >
+          <div className="flex items-center justify-center gap-2 text-primary">
+            <Settings size={20} />
+            <span className="text-senior-base font-semibold">그룹 관리</span>
+          </div>
+        </Card>
       </section>
     </div>
   );

@@ -132,26 +132,10 @@ export default function MyProfile() {
   return (
     <div className="min-h-screen pb-24 px-4 pt-8">
       <div className="max-w-2xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+        <div className="mb-6">
           <h1 className="text-senior-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             내 정보
           </h1>
-          {!isEditing ? (
-            <Button onClick={() => setIsEditing(true)} variant="outline" size="lg">
-              <Edit2 className="mr-2" size={18} />
-              수정
-            </Button>
-          ) : (
-            <div className="flex gap-2">
-              <Button onClick={handleCancel} variant="outline" size="lg">
-                취소
-              </Button>
-              <Button onClick={handleSave} size="lg">
-                <Save className="mr-2" size={18} />
-                저장
-              </Button>
-            </div>
-          )}
         </div>
 
         <Card className="p-6 mb-6 backdrop-blur-sm bg-card/95 border-2">
@@ -220,6 +204,38 @@ export default function MyProfile() {
             </div>
           </div>
         </Card>
+
+        {!isEditing ? (
+          <Card 
+            className="p-4 mb-4 transition-colors cursor-pointer hover:bg-accent/5 border-2 border-dashed"
+            onClick={() => setIsEditing(true)}
+          >
+            <div className="flex items-center justify-center gap-2 text-primary">
+              <Edit2 size={20} />
+              <span className="text-senior-base font-semibold">정보 수정</span>
+            </div>
+          </Card>
+        ) : (
+          <div className="flex gap-3 mb-4">
+            <Card 
+              className="flex-1 p-4 transition-colors cursor-pointer hover:bg-accent/5 border-2"
+              onClick={handleCancel}
+            >
+              <div className="flex items-center justify-center">
+                <span className="text-senior-base font-semibold">취소</span>
+              </div>
+            </Card>
+            <Card 
+              className="flex-1 p-4 transition-colors cursor-pointer hover:bg-primary/90 bg-primary text-primary-foreground border-2 border-primary"
+              onClick={handleSave}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <Save size={20} />
+                <span className="text-senior-base font-semibold">저장</span>
+              </div>
+            </Card>
+          </div>
+        )}
 
         <Button
           onClick={signOut}
