@@ -139,35 +139,17 @@ export default function GroupCalendar() {
 
       const userIds = members.map((m) => m.user_id);
 
-      // Get profiles with mood from family_members
+      // Get profiles with mood
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, display_name, avatar_url")
+        .select("id, display_name, avatar_url, mood")
         .in("id", userIds);
 
       if (profilesError) throw profilesError;
 
-      // Get latest mood for each user
-      const profilesWithMood = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          const { data: memberData } = await supabase
-            .from("family_members")
-            .select("mood")
-            .eq("user_id", profile.id)
-            .eq("family_group_id", selectedGroup.id)
-            .maybeSingle();
-
-          return {
-            ...profile,
-            user_id: profile.id,
-            mood: memberData?.mood || null,
-          };
-        }),
-      );
-
       // Map members with profile data including mood
       const membersWithData = members.map((member) => {
-        const profile = profilesWithMood?.find((p) => p.user_id === member.user_id);
+        const profile = profiles?.find((p) => p.id === member.user_id);
 
         return {
           user_id: member.user_id,
