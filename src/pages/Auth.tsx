@@ -12,6 +12,9 @@ export default function Auth() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [locationCity, setLocationCity] = useState("");
+  const [locationDistrict, setLocationDistrict] = useState("");
+  const [locationDong, setLocationDong] = useState("");
   const { signIn, signUp } = useAuth();
 
   // Convert phone number to email format for Supabase
@@ -48,11 +51,16 @@ export default function Auth() {
       return;
     }
 
+    if (!isLogin && (!locationCity || !locationDistrict || !locationDong)) {
+      toast.error("위치 정보를 모두 입력해주세요");
+      return;
+    }
+
     try {
       const email = phoneToEmail(cleanPhone);
       const { error } = isLogin
         ? await signIn(email, password)
-        : await signUp(email, password, displayName);
+        : await signUp(email, password, displayName, locationCity, locationDistrict, locationDong);
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
@@ -84,19 +92,63 @@ export default function Auth() {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {!isLogin && (
-            <div className="space-y-3">
-              <Label htmlFor="displayName" className="text-senior-lg">
-                이름
-              </Label>
-              <Input
-                id="displayName"
-                type="text"
-                placeholder="홍길동"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="h-16 text-senior-base px-6 border-2"
-              />
-            </div>
+            <>
+              <div className="space-y-3">
+                <Label htmlFor="displayName" className="text-senior-lg">
+                  이름
+                </Label>
+                <Input
+                  id="displayName"
+                  type="text"
+                  placeholder="홍길동"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="h-16 text-senior-base px-6 border-2"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="locationCity" className="text-senior-lg">
+                  시/도
+                </Label>
+                <Input
+                  id="locationCity"
+                  type="text"
+                  placeholder="서울특별시"
+                  value={locationCity}
+                  onChange={(e) => setLocationCity(e.target.value)}
+                  className="h-16 text-senior-base px-6 border-2"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="locationDistrict" className="text-senior-lg">
+                  시/군/구
+                </Label>
+                <Input
+                  id="locationDistrict"
+                  type="text"
+                  placeholder="강남구"
+                  value={locationDistrict}
+                  onChange={(e) => setLocationDistrict(e.target.value)}
+                  className="h-16 text-senior-base px-6 border-2"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label htmlFor="locationDong" className="text-senior-lg">
+                  동/읍/면
+                </Label>
+                <Input
+                  id="locationDong"
+                  type="text"
+                  placeholder="역삼동"
+                  value={locationDong}
+                  onChange={(e) => setLocationDong(e.target.value)}
+                  className="h-16 text-senior-base px-6 border-2"
+                />
+              </div>
+            </>
           )}
 
           <div className="space-y-3">

@@ -118,6 +118,9 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          location_city: string | null
+          location_district: string | null
+          location_dong: string | null
           updated_at: string
           user_id: string
         }
@@ -126,6 +129,9 @@ export type Database = {
           created_at?: string
           display_name: string
           id?: string
+          location_city?: string | null
+          location_district?: string | null
+          location_dong?: string | null
           updated_at?: string
           user_id: string
         }
@@ -134,6 +140,9 @@ export type Database = {
           created_at?: string
           display_name?: string
           id?: string
+          location_city?: string | null
+          location_district?: string | null
+          location_dong?: string | null
           updated_at?: string
           user_id?: string
         }
