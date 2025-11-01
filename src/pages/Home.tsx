@@ -12,6 +12,12 @@ interface WeatherData {
   weathercode: number;
 }
 
+const moods = [
+  { id: "good", emoji: "😊", label: "행복" },
+  { id: "okay", emoji: "😐", label: "보통" },
+  { id: "bad", emoji: "😢", label: "나쁨" },
+];
+
 const districtCoordinates: Record<string, { lat: number; lon: number }> = {
   종로구: { lat: 37.5735, lon: 126.9792 },
   중구: { lat: 37.5641, lon: 126.9979 },
@@ -45,6 +51,8 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
   const { user } = useAuth();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
+  const [currentMood, setCurrentMood] = useState<string | null>(null);
+  const [isRecordingMood, setIsRecordingMood] = useState(false);
 
   useEffect(() => {
     const fetchWeather = async () => {
@@ -89,8 +97,28 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
       }
     };
 
+    const fetchCurrentMood = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("mood_records")
+          .select("mood")
+          .eq("user_id", user.id)
+          .order("recorded_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (error) throw error;
+        setCurrentMood(data?.mood || null);
+      } catch (error) {
+        console.error("기분 기록을 가져오는데 실패했습니다:", error);
+      }
+    };
+
     fetchWeather();
     fetchSchedules();
+    fetchCurrentMood();
 
     const channel = supabase
       .channel('schedule-changes')
@@ -134,6 +162,30 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     return `${period} ${displayHour}:${minutes}`;
   };
 
+  const handleMoodSelect = async (moodId: string) => {
+    if (!user || isRecordingMood) return;
+
+    setIsRecordingMood(true);
+    try {
+      const { error } = await supabase
+        .from("mood_records")
+        .insert({
+          user_id: user.id,
+          mood: moodId,
+        });
+
+      if (error) throw error;
+
+      setCurrentMood(moodId);
+      toast.success("오늘의 기분이 기록되었습니다");
+    } catch (error: any) {
+      console.error("기분 기록에 실패했습니다:", error);
+      toast.error("기분 기록에 실패했습니다");
+    } finally {
+      setIsRecordingMood(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
       {/* Weather and Date Section */}
@@ -165,6 +217,56 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
           </p>
         )}
       </div>
+
+      {/* Mood Recording Section */}
+      <section className="w-full max-w-2xl mt-6">
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">
+            오늘의 기분
+          </h2>
+        </div>
+
+        {currentMood ? (
+          <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border/50 text-center">
+            <div className="text-6xl mb-3">
+              {moods.find((m) => m.id === currentMood)?.emoji}
+            </div>
+            <p className="text-senior-lg font-semibold mb-2">
+              {moods.find((m) => m.id === currentMood)?.label}
+            </p>
+            <p className="text-senior-sm text-muted-foreground mb-4">
+              오늘 기분이 기록되었습니다
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setCurrentMood(null)}
+              className="text-senior-base"
+            >
+              다시 선택하기
+            </Button>
+          </div>
+        ) : (
+          <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
+            <p className="text-senior-base text-center mb-4 text-muted-foreground">
+              오늘 기분은 어떠신가요?
+            </p>
+            <div className="grid grid-cols-3 gap-4">
+              {moods.map((mood) => (
+                <Button
+                  key={mood.id}
+                  onClick={() => handleMoodSelect(mood.id)}
+                  disabled={isRecordingMood}
+                  variant="outline"
+                  className="flex flex-col items-center gap-3 h-auto py-6 hover:bg-accent/10 transition-all"
+                >
+                  <div className="text-5xl">{mood.emoji}</div>
+                  <span className="text-senior-base font-semibold">{mood.label}</span>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
 
       {/* Today's Schedule */}
       <section className="w-full max-w-2xl mt-6">

@@ -7,10 +7,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import FamilyManagement from "./FamilyManagement";
 
 const moods = [
-  { id: "good", emoji: "😊", label: "좋음" },
-  { id: "okay", emoji: "🙂", label: "보통" },
-  { id: "sad", emoji: "😥", label: "속상함" },
-  { id: "sick", emoji: "🤒", label: "아파요" },
+  { id: "good", emoji: "😊", label: "행복" },
+  { id: "okay", emoji: "😐", label: "보통" },
+  { id: "bad", emoji: "😢", label: "나쁨" },
 ];
 
 interface FamilyGroup {
