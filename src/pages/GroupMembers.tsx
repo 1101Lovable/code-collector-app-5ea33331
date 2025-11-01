@@ -19,9 +19,10 @@ interface GroupMembersProps {
   groupId: string;
   groupName: string;
   onBack: () => void;
+  showMood?: boolean;
 }
 
-export default function GroupMembers({ groupId, groupName, onBack }: GroupMembersProps) {
+export default function GroupMembers({ groupId, groupName, onBack, showMood = false }: GroupMembersProps) {
   const { user } = useAuth();
   const [members, setMembers] = useState<GroupMember[]>([]);
   const [isUserHead, setIsUserHead] = useState(false);
@@ -182,12 +183,12 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
                         <p className="text-senior-sm text-primary cursor-pointer hover:underline mt-1">
                           캘린더 보기
                         </p>
-                      )}
-                    </div>
-                    {getMoodEmoji(member.mood) && (
-                      <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.mood)}</div>
-                    )}
-                  </div>
+                     )}
+                   </div>
+                   {showMood && getMoodEmoji(member.mood) && (
+                     <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.mood)}</div>
+                   )}
+                 </div>
 
                   {isUserHead && !member.is_head && (
                     <Button
