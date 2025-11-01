@@ -58,47 +58,54 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
       if (profileError) throw profileError;
 
       // Combine member data with profiles
-      const membersWithProfiles = memberData
-        .filter((member) => member.user_id !== user?.id) // 자신은 제외
-        .map((member) => {
-          const profile = profiles?.find((p) => p.id === member.user_id);
-          return {
-            id: member.id,
-            user_id: member.user_id,
-            display_name: profile?.display_name || "Unknown",
-            avatar_url: profile?.avatar_url || null,
-            is_head: member.is_head,
-          };
-        });
+      const membersWithProfiles = memberData.map((member) => {
+        const profile = profiles?.find((p) => p.id === member.user_id);
+        return {
+          id: member.id,
+          user_id: member.user_id,
+          display_name: profile?.display_name || "Unknown",
+          avatar_url: profile?.avatar_url || null,
+          is_head: member.is_head,
+        };
+      });
 
-      setMembers(membersWithProfiles);
+      // 현재 사용자를 맨 위로 정렬
+      const sortedMembers = membersWithProfiles.sort((a, b) => {
+        if (a.user_id === user?.id) return -1;
+        if (b.user_id === user?.id) return 1;
+        return 0;
+      });
+
+      setMembers(sortedMembers);
     } catch (error: any) {
       console.error("Error fetching members:", error);
       toast.error("구성원 정보를 불러오는데 실패했습니다");
     }
   };
 
-  const handleToggleHead = async (memberId: string, currentIsHead: boolean) => {
-    if (!isUserHead) {
-      toast.error("가장만 역할을 변경할 수 있습니다");
-      return;
-    }
-
+  const handleSetAsHead = async (memberId: string) => {
     try {
-      const { error } = await supabase
+      // 먼저 모든 멤버의 is_head를 false로 설정
+      const { error: resetError } = await supabase
         .from("family_members")
-        .update({ is_head: !currentIsHead })
+        .update({ is_head: false })
+        .eq("family_group_id", groupId);
+
+      if (resetError) throw resetError;
+
+      // 선택한 멤버를 가장으로 설정
+      const { error: setError } = await supabase
+        .from("family_members")
+        .update({ is_head: true })
         .eq("id", memberId);
 
-      if (error) throw error;
+      if (setError) throw setError;
 
-      toast.success(
-        currentIsHead ? "가장 역할이 해제되었습니다" : "가장으로 설정되었습니다"
-      );
+      toast.success("가장으로 지정되었습니다");
       fetchMembers();
     } catch (error: any) {
-      console.error("Error updating member role:", error);
-      toast.error("역할 변경에 실패했습니다");
+      console.error("가장 지정 오류:", error);
+      toast.error("가장 지정에 실패했습니다");
     }
   };
 
@@ -128,10 +135,10 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
             </Card>
           ) : (
             members.map((member) => (
-              <Card key={member.id} className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
+              <Card key={member.id} className="p-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
                       {member.avatar_url ? (
                         <img
                           src={member.avatar_url}
@@ -142,11 +149,16 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
                         "👤"
                       )}
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-senior-lg font-semibold">
-                         {member.display_name}
+                        <h3 className="text-senior-lg font-semibold truncate">
+                          {member.display_name}
                         </h3>
+                        {member.user_id === user?.id && (
+                          <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full flex-shrink-0">
+                            나
+                          </span>
+                        )}
                       </div>
                       {member.is_head && (
                         <div className="flex items-center gap-1 text-accent">
@@ -157,15 +169,14 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
                     </div>
                   </div>
 
-                  {isUserHead && (
+                  {isUserHead && !member.is_head && (
                     <Button
-                      variant={member.is_head ? "outline" : "default"}
+                      variant="outline"
                       size="sm"
-                      onClick={() => handleToggleHead(member.id, member.is_head)}
-                      className="flex-shrink-0"
+                      onClick={() => handleSetAsHead(member.id)}
+                      className="gap-2 flex-shrink-0"
                     >
-                      <Crown size={16} />
-                      {member.is_head ? "가장 해제" : "가장 지정"}
+                      가장 지정
                     </Button>
                   )}
                 </div>
