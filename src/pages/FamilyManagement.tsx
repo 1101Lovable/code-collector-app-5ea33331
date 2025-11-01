@@ -1,4 +1,4 @@
-import { Plus, UserPlus, Copy, Check, ArrowLeft, Users } from "lucide-react";
+import { Plus, UserPlus, Copy, Check, ArrowLeft, Users, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -40,6 +50,9 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
   const [selectedGroup, setSelectedGroup] = useState<{ id: string; name: string } | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deletingGroup, setDeletingGroup] = useState<{ id: string; name: string } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchMyGroups();
@@ -188,6 +201,30 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
     setTimeout(() => setCopiedCode(null), 2000);
   };
 
+  const handleDeleteGroup = async () => {
+    if (!deletingGroup) return;
+
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("family_groups")
+        .delete()
+        .eq("id", deletingGroup.id);
+
+      if (error) throw error;
+
+      toast.success(`"${deletingGroup.name}" 그룹이 삭제되었습니다`);
+      setDeleteDialogOpen(false);
+      setDeletingGroup(null);
+      fetchMyGroups();
+    } catch (error: any) {
+      console.error("Error deleting group:", error);
+      toast.error("그룹 삭제에 실패했습니다");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (selectedGroup) {
     return (
       <GroupMembers groupId={selectedGroup.id} groupName={selectedGroup.name} onBack={() => setSelectedGroup(null)} />
@@ -332,21 +369,58 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
                     </Button>
                   </div>
 
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    onClick={() => setSelectedGroup({ id: group.id, name: group.name })}
-                    className="w-full gap-2"
-                  >
-                    <Users size={20} />
-                    구성원 보기
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={() => setSelectedGroup({ id: group.id, name: group.name })}
+                      className="flex-1 gap-2"
+                    >
+                      <Users size={20} />
+                      구성원 보기
+                    </Button>
+                    {group.created_by === user?.id && (
+                      <Button
+                        variant="destructive"
+                        size="lg"
+                        onClick={() => {
+                          setDeletingGroup({ id: group.id, name: group.name });
+                          setDeleteDialogOpen(true);
+                        }}
+                        className="gap-2"
+                      >
+                        <Trash2 size={20} />
+                        삭제
+                      </Button>
+                    )}
+                  </div>
                 </Card>
               ))}
             </div>
           )}
         </div>
       </section>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-senior-xl">그룹 삭제</AlertDialogTitle>
+            <AlertDialogDescription className="text-senior-base">
+              "{deletingGroup?.name}" 그룹을 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="text-senior-base">취소</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteGroup}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "삭제 중..." : "삭제"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
