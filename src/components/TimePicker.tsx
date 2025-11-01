@@ -53,14 +53,14 @@ export default function TimePicker({ value, onChange, disabled }: TimePickerProp
     <div className="flex items-center gap-3">
       {/* AM/PM */}
       <Select value={ampm} onValueChange={setAmPm} disabled={disabled}>
-        <SelectTrigger className="h-24 text-2xl px-4 min-w-[7rem]">
+        <SelectTrigger className="h-24 text-xl px-4 min-w-[7rem]">
           <SelectValue placeholder="오전/오후" />
         </SelectTrigger>
         <SelectContent className="bg-popover z-50">
-          <SelectItem value="오전" className="text-2xl">
+          <SelectItem value="오전" className="text-xl">
             오전
           </SelectItem>
-          <SelectItem value="오후" className="text-2xl">
+          <SelectItem value="오후" className="text-xl">
             오후
           </SelectItem>
         </SelectContent>
@@ -68,7 +68,7 @@ export default function TimePicker({ value, onChange, disabled }: TimePickerProp
 
       {/* Hour 1..12 */}
       <Select value={hour} onValueChange={setHour} disabled={disabled}>
-        <SelectTrigger className="h-24 text-2xl px-4 min-w-[7rem]">
+        <SelectTrigger className="h-24 text-xl px-4 min-w-[7rem]">
           <SelectValue placeholder="시간" />
         </SelectTrigger>
         <SelectContent className="bg-popover z-50">
@@ -82,7 +82,7 @@ export default function TimePicker({ value, onChange, disabled }: TimePickerProp
 
       {/* Minute 0..59 (10분 단위) */}
       <Select value={minute} onValueChange={setMinute} disabled={disabled}>
-        <SelectTrigger className="h-24 text-2xl px-4 min-w-[7rem]">
+        <SelectTrigger className="h-24 text-xl px-4 min-w-[7rem]">
           <SelectValue placeholder="분" />
         </SelectTrigger>
         <SelectContent className="bg-popover z-50">
