@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, MapPin, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Trash2, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -56,17 +56,54 @@ export default function ScheduleCalendar() {
       const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
       const endDate = `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
 
-      const { data, error } = await supabase
+      // Get user's own schedules
+      const { data: ownSchedules, error: ownError } = await supabase
         .from("schedules")
         .select("*")
         .eq("user_id", user.id)
         .gte("schedule_date", startDate)
         .lte("schedule_date", endDate);
 
-      if (error) throw error;
+      if (ownError) throw ownError;
+
+      // Get user's group code for family schedules
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("family_group_code")
+        .eq("user_id", user.id)
+        .single();
+
+      let familySchedules: any[] = [];
+      
+      if (profile?.family_group_code) {
+        // Get family members' user IDs
+        const { data: familyProfiles } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .eq("family_group_code", profile.family_group_code)
+          .neq("user_id", user.id);
+
+        if (familyProfiles && familyProfiles.length > 0) {
+          const familyUserIds = familyProfiles.map(p => p.user_id);
+          
+          // Get shared schedules from family members
+          const { data: sharedSchedules } = await supabase
+            .from("schedules")
+            .select("*")
+            .in("user_id", familyUserIds)
+            .eq("shared_with_family", true)
+            .gte("schedule_date", startDate)
+            .lte("schedule_date", endDate);
+
+          familySchedules = sharedSchedules || [];
+        }
+      }
+
+      // Combine all schedules
+      const allSchedules = [...(ownSchedules || []), ...familySchedules];
 
       const schedulesByDate: { [key: string]: any[] } = {};
-      data?.forEach((schedule) => {
+      allSchedules.forEach((schedule) => {
         const day = new Date(schedule.schedule_date).getDate();
         if (!schedulesByDate[day]) {
           schedulesByDate[day] = [];
@@ -85,16 +122,58 @@ export default function ScheduleCalendar() {
 
     try {
       const dateStr = selectedDate.toISOString().split('T')[0];
-      const { data, error } = await supabase
+      
+      // Get user's own schedules
+      const { data: ownSchedules, error: ownError } = await supabase
         .from("schedules")
         .select("*")
         .eq("user_id", user.id)
         .eq("schedule_date", dateStr)
         .order("schedule_time", { ascending: true });
 
-      if (error) throw error;
+      if (ownError) throw ownError;
 
-      setSchedules(data || []);
+      // Get user's group code for family schedules
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("family_group_code")
+        .eq("user_id", user.id)
+        .single();
+
+      let familySchedules: any[] = [];
+      
+      if (profile?.family_group_code) {
+        // Get family members' user IDs
+        const { data: familyProfiles } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .eq("family_group_code", profile.family_group_code)
+          .neq("user_id", user.id);
+
+        if (familyProfiles && familyProfiles.length > 0) {
+          const familyUserIds = familyProfiles.map(p => p.user_id);
+          
+          // Get shared schedules from family members
+          const { data: sharedSchedules } = await supabase
+            .from("schedules")
+            .select("*")
+            .in("user_id", familyUserIds)
+            .eq("schedule_date", dateStr)
+            .eq("shared_with_family", true)
+            .order("schedule_time", { ascending: true });
+
+          familySchedules = sharedSchedules || [];
+        }
+      }
+
+      // Combine and sort all schedules
+      const allSchedules = [...(ownSchedules || []), ...familySchedules].sort((a, b) => {
+        if (!a.schedule_time) return 1;
+        if (!b.schedule_time) return -1;
+        return a.schedule_time.localeCompare(b.schedule_time);
+      });
+
+      setSchedules(allSchedules);
     } catch (error) {
       console.error("일정을 가져오는데 실패했습니다:", error);
     }
@@ -278,15 +357,22 @@ export default function ScheduleCalendar() {
                     </p>
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
+                  {schedule.shared_with_family && schedule.user_id !== user?.id && (
+                    <div className="flex items-center gap-1 bg-secondary px-2 py-1 rounded-full text-senior-xs text-foreground mt-2 inline-flex">
+                      <Users size={12} /> 가족 일정
+                    </div>
+                  )}
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteSchedule(schedule.id)}
-                  className="text-destructive hover:bg-destructive/10 flex-shrink-0 ml-2"
-                >
-                  <Trash2 size={20} />
-                </Button>
+                {schedule.user_id === user?.id && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDeleteSchedule(schedule.id)}
+                    className="text-destructive hover:bg-destructive/10 flex-shrink-0 ml-2"
+                  >
+                    <Trash2 size={20} />
+                  </Button>
+                )}
               </div>
             ))}
           </div>
