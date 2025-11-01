@@ -8,37 +8,37 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Orange and amber warm palette */
-    --background: 33 100% 96%;
-    --foreground: 20 14.3% 4.1%;
+    /* Teal/Cyan palette inspired by Daily Care logo */
+    --background: 180 20% 96%;
+    --foreground: 183 29% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 20 14.3% 4.1%;
+    --card-foreground: 183 29% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14.3% 4.1%;
+    --popover-foreground: 183 29% 15%;
 
-    /* Vibrant orange for primary */
-    --primary: 25 95% 53%;
+    /* Main teal color from logo */
+    --primary: 183 29% 35%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft amber for secondary */
-    --secondary: 43 96% 89%;
-    --secondary-foreground: 25 90% 25%;
+    /* Soft teal for secondary */
+    --secondary: 183 29% 85%;
+    --secondary-foreground: 183 29% 25%;
 
-    --muted: 33 100% 96%;
-    --muted-foreground: 25 5.3% 44.7%;
+    --muted: 180 20% 96%;
+    --muted-foreground: 183 15% 45%;
 
-    /* Bright amber accent */
-    --accent: 43 100% 70%;
-    --accent-foreground: 25 90% 25%;
+    /* Bright teal accent */
+    --accent: 183 50% 55%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 60 9.1% 97.8%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 25 50% 90%;
-    --input: 25 50% 90%;
-    --ring: 25 95% 53%;
+    --border: 183 20% 88%;
+    --input: 183 20% 88%;
+    --ring: 183 29% 35%;
 
     /* Large radius for friendly UI */
     --radius: 1rem;
