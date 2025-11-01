@@ -233,7 +233,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       {/* Form */}
       <div className="flex-1 px-6 pt-8 space-y-8">
         <div className="space-y-4">
-          <Label htmlFor="title" className="text-3xl font-bold">
+          <Label htmlFor="title" className="text-2xl font-bold">
             무엇을 하시나요?
           </Label>
           <Input
@@ -246,7 +246,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="date" className="text-3xl font-bold">
+          <Label htmlFor="date" className="text-2xl font-bold">
             언제 하시나요?
           </Label>
           <Input
@@ -259,14 +259,14 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="time" className="text-3xl font-bold">
+          <Label htmlFor="time" className="text-2xl font-bold">
             몇 시에 시작하나요?
           </Label>
           <TimePicker value={time} onChange={setTime} />
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="end-time" className="text-3xl font-bold">
+          <Label htmlFor="end-time" className="text-2xl font-bold">
             몇 시에 끝나나요? (선택)
           </Label>
           <TimePicker value={endTime} onChange={setEndTime} />
@@ -278,7 +278,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <Share2 className="text-accent" size={32} />
-                <Label htmlFor="share" className="text-3xl cursor-pointer">
+                <Label htmlFor="share" className="text-2xl cursor-pointer">
                   이 일정을 그룹에게 공유할까요?
                 </Label>
               </div>
