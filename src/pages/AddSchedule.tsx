@@ -8,6 +8,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { toLocalDateString } from "@/lib/utils";
 
 interface AddScheduleProps {
   onBack: () => void;
@@ -19,7 +20,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
   const { user } = useAuth();
   const [shareWithFamily, setShareWithFamily] = useState(scheduleToEdit?.family_id ? true : false);
   const [title, setTitle] = useState(scheduleToEdit?.title || "");
-  const [date, setDate] = useState(scheduleToEdit?.schedule_date || new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(scheduleToEdit?.schedule_date || toLocalDateString(new Date()));
   const [time, setTime] = useState(scheduleToEdit?.schedule_time || "");
   const [isSaving, setIsSaving] = useState(false);
   const isEditing = !!scheduleToEdit;

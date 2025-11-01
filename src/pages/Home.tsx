@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { toLocalDateString } from "@/lib/utils";
 
 interface WeatherData {
   temperature: number;
@@ -81,7 +82,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
       if (!user) return;
 
       try {
-        const today = new Date().toISOString().split("T")[0];
+        const today = toLocalDateString(new Date());
         const { data, error } = await supabase
           .from("schedules")
           .select("*")

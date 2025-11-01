@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion } from "framer-motion";
+import { toLocalDateString } from "@/lib/utils";
 
 interface TodayScheduleProps {
   onAddSchedule: () => void;
@@ -173,7 +174,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       if (!user) return;
 
       try {
-        const today = new Date().toISOString().split("T")[0];
+        const today = toLocalDateString(new Date());
 
         // Get user's own schedules
         const { data: ownSchedules, error: ownError } = await supabase

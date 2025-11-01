@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { toLocalDateString } from "@/lib/utils";
 
 const getEventIcon = (eventType: string | null): string => {
   if (!eventType) return "🎪";
@@ -142,7 +143,7 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
     if (!user) return;
 
     try {
-      const dateStr = selectedDate.toISOString().split("T")[0];
+      const dateStr = toLocalDateString(selectedDate);
 
       // Get user's own schedules
       const { data: ownSchedules, error: ownError } = await supabase
@@ -186,7 +187,7 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
             .from("schedules")
             .select("*")
             .in("user_id", familyUserIds)
-            .eq("schedule_date", dateStr)
+              .eq("schedule_date", dateStr)
             .not("family_id", "is", null)
             .order("start_time", { ascending: true });
 

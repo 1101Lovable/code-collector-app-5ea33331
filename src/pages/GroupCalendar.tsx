@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import FamilyManagement from "./FamilyManagement";
+import { toLocalDateString } from "@/lib/utils";
 
 const moods = [
   { id: "good", emoji: "😊", label: "행복" },
