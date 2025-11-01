@@ -157,9 +157,15 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
         .from("family_groups")
         .select("*")
         .eq("invite_code", inviteCode.trim().toUpperCase())
-        .single();
+        .maybeSingle();
 
-      if (groupError || !group) {
+      if (groupError) {
+        console.error("Error finding group:", groupError);
+        toast.error("그룹 조회 중 오류가 발생했습니다");
+        return;
+      }
+
+      if (!group) {
         toast.error("유효하지 않은 초대 코드입니다");
         return;
       }
