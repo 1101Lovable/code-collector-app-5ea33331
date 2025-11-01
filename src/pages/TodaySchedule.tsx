@@ -12,7 +12,7 @@ interface TodayScheduleProps {
 
 export default function TodaySchedule({ onAddSchedule, userId }: TodayScheduleProps) {
   const navigate = useNavigate();
-  
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -52,12 +52,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       {/* Weather and Date Section */}
       <section className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 rounded-b-3xl shadow-lg">
         <div className="flex items-center justify-between mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleLogout}
-            className="text-senior-sm"
-          >
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm">
             <LogOut size={20} />
             로그아웃
           </Button>
@@ -65,10 +60,10 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-senior-2xl mb-2">
-              {today.getMonth() + 1}월 {today.getDate()}일{" "}
-              {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
+              {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}
+              요일
             </h1>
-            <p className="text-senior-lg text-muted-foreground">좋은 아침입니다! 😊</p>
+            <p className="text-senior-lg text-muted-foreground">좋은 아침입니다!</p>
           </div>
           <div className="text-center">
             <div className="text-senior-3xl">☀️</div>
@@ -83,7 +78,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           <Calendar className="text-primary" />
           오늘의 일정
         </h2>
-        
+
         {schedules.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-senior-base text-muted-foreground">오늘은 일정이 없어요</p>
@@ -115,10 +110,13 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           <Sparkles className="text-accent" />
           오늘 뭐 할까요? 💡
         </h2>
-        
+
         <div className="space-y-4">
           {recommendations.map((rec) => (
-            <Card key={rec.id} className="p-6 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer">
+            <Card
+              key={rec.id}
+              className="p-6 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer"
+            >
               <div className="flex items-center gap-6">
                 <div className="text-senior-3xl min-w-[80px] min-h-[80px] bg-secondary rounded-2xl flex items-center justify-center">
                   {rec.image}
@@ -137,11 +135,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       </section>
 
       {/* Floating Action Button */}
-      <Button
-        size="xl"
-        onClick={onAddSchedule}
-        className="fixed bottom-28 right-6 rounded-full shadow-2xl w-20 h-20"
-      >
+      <Button size="xl" onClick={onAddSchedule} className="fixed bottom-28 right-6 rounded-full shadow-2xl w-20 h-20">
         <Plus size={48} />
       </Button>
     </div>
