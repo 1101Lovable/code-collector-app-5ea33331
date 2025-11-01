@@ -213,40 +213,40 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       {/* Form */}
       <div className="flex-1 px-6 pt-8 space-y-8">
         <div className="space-y-4">
-          <Label htmlFor="title" className="text-senior-xl">
+          <Label htmlFor="title" className="text-senior-2xl font-bold">
             무엇을 하시나요?
           </Label>
           <Input
             id="title"
             placeholder="예: 병원 가기, 친구 만나기"
-            className="h-20 text-senior-xl px-6 border-2"
+            className="h-24 text-senior-2xl px-6 border-2"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="date" className="text-senior-xl">
+          <Label htmlFor="date" className="text-senior-2xl font-bold">
             언제 하시나요?
           </Label>
           <Input
             id="date"
             type="date"
-            className="h-20 text-senior-xl px-6 border-2"
+            className="h-24 text-senior-2xl px-6 border-2 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         </div>
 
         <div className="space-y-4">
-          <Label htmlFor="time" className="text-senior-xl">
+          <Label htmlFor="time" className="text-senior-2xl font-bold">
             몇 시에 하시나요?
           </Label>
           <Input
             id="time"
             type="time"
             step="600"
-            className="h-20 text-senior-xl px-6 border-2"
+            className="h-24 text-senior-2xl px-6 border-2 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             value={time}
             onChange={(e) => setTime(e.target.value)}
           />

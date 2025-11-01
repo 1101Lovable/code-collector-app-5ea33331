@@ -575,27 +575,27 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <Label htmlFor="schedule-date" className="text-senior-xl">
+              <Label htmlFor="schedule-date" className="text-senior-2xl font-bold">
                 날짜
               </Label>
               <Input
                 id="schedule-date"
                 type="date"
-                className="h-20 text-senior-xl px-4"
+                className="h-24 text-senior-2xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 value={addScheduleDate}
                 onChange={(e) => setAddScheduleDate(e.target.value)}
                 disabled={isEventWithFixedTime()}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="schedule-time" className="text-senior-xl">
+              <Label htmlFor="schedule-time" className="text-senior-2xl font-bold">
                 시간 {!isEventWithFixedTime() && "(선택)"}
               </Label>
               <Input
                 id="schedule-time"
                 type="time"
                 step="600"
-                className="h-20 text-senior-xl px-4"
+                className="h-24 text-senior-2xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 value={addScheduleTime}
                 onChange={(e) => setAddScheduleTime(e.target.value)}
                 disabled={isEventWithFixedTime()}
