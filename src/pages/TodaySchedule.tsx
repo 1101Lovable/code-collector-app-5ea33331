@@ -244,17 +244,24 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
             .select("id, name")
             .in("id", groupIds);
 
-          const groupMap = new Map(groups?.map(g => [g.id, g.name]) || []);
-
+          const groupMap = new Map(groups?.map((g) => [g.id, g.name]) || []);
+ 
           // Get shared schedules through schedule_family_shares
           const { data: shares } = await supabase
             .from("schedule_family_shares")
             .select("schedule_id, family_group_id")
             .in("family_group_id", groupIds);
-
+ 
           if (shares && shares.length > 0) {
-            const scheduleIds = shares.map((s) => s.schedule_id);
-
+            const scheduleIds = [...new Set(shares.map((s) => s.schedule_id))];
+ 
+            // Build a map of schedule_id -> [family_group_id]
+            const sharesBySchedule = shares.reduce((acc: Record<string, string[]>, s) => {
+              if (!acc[s.schedule_id]) acc[s.schedule_id] = [];
+              acc[s.schedule_id].push(s.family_group_id);
+              return acc;
+            }, {} as Record<string, string[]>);
+ 
             // Get the actual schedules
             const { data: sharedSchedules } = await supabase
               .from("schedules")
@@ -262,14 +269,22 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               .in("id", scheduleIds)
               .eq("schedule_date", today)
               .neq("user_id", user.id);
-
-            // Map group names to schedules
+ 
+            // Map group labels (first name + 외 n) to schedules
             familySchedules = (sharedSchedules || []).map((schedule) => {
-              const share = shares.find((s) => s.schedule_id === schedule.id);
-              const groupName = share ? groupMap.get(share.family_group_id) : null;
+              const groupIdsForSchedule = sharesBySchedule[schedule.id] || [];
+              const names = groupIdsForSchedule
+                .map((id) => groupMap.get(id))
+                .filter((n): n is string => !!n);
+ 
+              const label =
+                names.length > 0
+                  ? `${names[0]}${names.length > 1 ? ` 외 ${names.length - 1}` : ""}`
+                  : null;
+ 
               return {
                 ...schedule,
-                group_name: groupName,
+                group_label: label,
               };
             });
           }
@@ -468,9 +483,9 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
-                {user && schedule.user_id !== user.id && schedule.group_name && (
+                {user && schedule.user_id !== user.id && schedule.group_label && (
                   <div className="flex items-center gap-1 bg-accent/10 px-3 py-1 rounded-full text-senior-sm text-accent-foreground flex-shrink-0 ml-4">
-                    <Users size={14} /> {schedule.group_name}
+                    <Users size={14} /> {schedule.group_label}
                   </div>
                 )}
               </div>

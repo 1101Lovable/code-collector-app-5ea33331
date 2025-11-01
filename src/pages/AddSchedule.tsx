@@ -23,7 +23,7 @@ interface AddScheduleProps {
 
 export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: AddScheduleProps) {
   const { user } = useAuth();
-  const [shareWithFamily, setShareWithFamily] = useState(scheduleToEdit?.family_id ? true : false);
+  const [shareWithFamily, setShareWithFamily] = useState<boolean>(scheduleToEdit?.shared_with_family ?? false);
   const [title, setTitle] = useState(scheduleToEdit?.title || "");
   const [date, setDate] = useState(scheduleToEdit?.schedule_date || toLocalDateString(new Date()));
   const [time, setTime] = useState(scheduleToEdit?.schedule_time || "");
@@ -55,6 +55,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
       if (data && data.length > 0) {
         setSelectedGroupIds(data.map((share) => share.family_group_id));
+        setShareWithFamily(true);
       }
     } catch (error: any) {
       console.error("Error fetching existing shares:", error);
