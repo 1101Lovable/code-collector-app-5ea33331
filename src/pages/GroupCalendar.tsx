@@ -17,6 +17,7 @@ interface FamilyMember {
   user_id: string;
   display_name: string;
   avatar_url: string | null;
+  is_head: boolean;
 }
 
 export default function GroupCalendar() {
@@ -116,7 +117,7 @@ export default function GroupCalendar() {
       // Get all members of the selected group (including current user)
       const { data: members, error: membersError } = await supabase
         .from("family_members")
-        .select("user_id")
+        .select("user_id, is_head")
         .eq("family_group_id", selectedGroup.id);
 
       if (membersError) throw membersError;
@@ -136,7 +137,18 @@ export default function GroupCalendar() {
 
       if (profilesError) throw profilesError;
 
-      setFamilyMembers(profiles || []);
+      // Combine member data with profiles
+      const membersWithProfiles = members.map((member) => {
+        const profile = profiles?.find((p) => p.user_id === member.user_id);
+        return {
+          user_id: member.user_id,
+          display_name: profile?.display_name || "Unknown",
+          avatar_url: profile?.avatar_url || null,
+          is_head: member.is_head,
+        };
+      });
+
+      setFamilyMembers(membersWithProfiles);
     } catch (error: any) {
       console.error("Error fetching family members:", error);
     }
@@ -402,12 +414,25 @@ export default function GroupCalendar() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-senior-lg font-semibold">
-                        {member.display_name}
-                      </h3>
-                      <p className="text-senior-sm text-muted-foreground">
-                        캘린더 보기
-                      </p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-senior-lg font-semibold">
+                          {member.display_name}
+                        </h3>
+                        {member.user_id === user?.id && (
+                          <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                            나
+                          </span>
+                        )}
+                      </div>
+                      {member.is_head ? (
+                        <div className="flex items-center gap-1 text-accent">
+                          <span className="text-senior-sm">👑 가장</span>
+                        </div>
+                      ) : (
+                        <p className="text-senior-sm text-muted-foreground">
+                          캘린더 보기
+                        </p>
+                      )}
                     </div>
                   </div>
                 </Card>
