@@ -40,8 +40,10 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
 
     try {
       // Parse time to create proper timestamps
-      const startTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
-      const endTime = time ? `${date}T${time}:00` : `${date}T23:59:59`;
+      // Ensure time is in HH:MM format (remove seconds if present from scheduleToEdit)
+      const cleanTime = time ? time.split(':').slice(0, 2).join(':') : null;
+      const startTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T00:00:00`;
+      const endTime = cleanTime ? `${date}T${cleanTime}:00` : `${date}T23:59:59`;
 
       const scheduleData = {
         title: title.trim(),
@@ -161,12 +163,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       </div>
 
       {/* Action Buttons */}
-      <div className="px-6 pb-6 space-y-4">
-        <Button size="xl" onClick={onViewCalendar} variant="outline" className="w-full">
-          <CalendarIcon />
-          전체 캘린더 보기
-        </Button>
-
+      <div className="px-6 pb-6">
         <Button size="xl" onClick={handleSave} className="w-full" disabled={isSaving}>
           {isSaving ? "저장 중..." : isEditing ? "일정 수정하기" : "일정 저장하기"}
         </Button>
