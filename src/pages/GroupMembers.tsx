@@ -118,55 +118,63 @@ export default function GroupMembers({ groupId, groupName, onBack }: GroupMember
         </div>
 
         <div className="space-y-3">
-          {members.map((member) => (
-            <Card key={member.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
-                    {member.avatar_url ? (
-                      <img
-                        src={member.avatar_url}
-                        alt={member.display_name}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      "👤"
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-senior-lg font-semibold">
-                        {member.display_name}
-                      </h3>
-                      {member.user_id === user?.id && (
-                        <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                          나
-                        </span>
+          {members.length === 0 ? (
+            <Card className="p-8 text-center">
+              <p className="text-senior-base text-muted-foreground">
+                구성원 정보를 불러오는 중입니다...
+              </p>
+            </Card>
+          ) : (
+            members.map((member) => (
+              <Card key={member.id} className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
+                      {member.avatar_url ? (
+                        <img
+                          src={member.avatar_url}
+                          alt={member.display_name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        "👤"
                       )}
                     </div>
-                    {member.is_head && (
-                      <div className="flex items-center gap-1 text-accent">
-                        <Crown size={16} />
-                        <span className="text-senior-sm">가장</span>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-senior-lg font-semibold">
+                          {member.display_name}
+                        </h3>
+                        {member.user_id === user?.id && (
+                          <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                            나
+                          </span>
+                        )}
                       </div>
-                    )}
+                      {member.is_head && (
+                        <div className="flex items-center gap-1 text-accent">
+                          <Crown size={16} />
+                          <span className="text-senior-sm">가장</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {isUserHead && member.user_id !== user?.id && (
-                  <Button
-                    variant={member.is_head ? "outline" : "default"}
-                    size="sm"
-                    onClick={() => handleToggleHead(member.id, member.is_head)}
-                    className="flex-shrink-0"
-                  >
-                    <Crown size={16} />
-                    {member.is_head ? "가장 해제" : "가장 지정"}
-                  </Button>
-                )}
-              </div>
-            </Card>
-          ))}
+                  {isUserHead && member.user_id !== user?.id && (
+                    <Button
+                      variant={member.is_head ? "outline" : "default"}
+                      size="sm"
+                      onClick={() => handleToggleHead(member.id, member.is_head)}
+                      className="flex-shrink-0"
+                    >
+                      <Crown size={16} />
+                      {member.is_head ? "가장 해제" : "가장 지정"}
+                    </Button>
+                  )}
+                </div>
+              </Card>
+            ))
+          )}
         </div>
 
         {isUserHead && (
