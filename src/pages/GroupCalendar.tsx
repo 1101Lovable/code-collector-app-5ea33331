@@ -42,7 +42,7 @@ export default function GroupCalendar() {
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
+
     return { firstDay, daysInMonth };
   };
 
@@ -86,10 +86,7 @@ export default function GroupCalendar() {
       const groupIds = memberships.map((m) => m.family_group_id);
 
       // Get group details
-      const { data: groups, error: groupsError } = await supabase
-        .from("family_groups")
-        .select("*")
-        .in("id", groupIds);
+      const { data: groups, error: groupsError } = await supabase.from("family_groups").select("*").in("id", groupIds);
 
       if (groupsError) throw groupsError;
 
@@ -106,7 +103,7 @@ export default function GroupCalendar() {
             name: group.name,
             member_count: count || 0,
           };
-        })
+        }),
       );
 
       setMyGroups(groupsWithCount);
@@ -157,13 +154,13 @@ export default function GroupCalendar() {
             user_id: profile.id,
             mood: memberData?.mood || null,
           };
-        })
+        }),
       );
 
       // Map members with profile data including mood
       const membersWithData = members.map((member) => {
         const profile = profilesWithMood?.find((p) => p.user_id === member.user_id);
-        
+
         return {
           user_id: member.user_id,
           display_name: profile?.display_name || "Unknown",
@@ -185,8 +182,8 @@ export default function GroupCalendar() {
     try {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
-      const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-      const endDate = `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
+      const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+      const endDate = `${year}-${String(month).padStart(2, "0")}-${daysInMonth}`;
 
       const scheduleQuery = supabase
         .from("schedules")
@@ -195,7 +192,7 @@ export default function GroupCalendar() {
         .not("family_id", "is", null)
         .gte("schedule_date", startDate)
         .lte("schedule_date", endDate);
-      
+
       const result: any = await scheduleQuery;
       const { data, error } = result;
 
@@ -274,23 +271,15 @@ export default function GroupCalendar() {
         {/* Month Navigator */}
         <div className="pb-4 max-w-2xl mx-auto w-full">
           <div className="flex items-center justify-between">
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={prevMonth}
-            >
+            <Button size="icon" variant="outline" onClick={prevMonth}>
               <ChevronLeft size={32} />
             </Button>
-            
+
             <h2 className="text-senior-xl font-bold">
               {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
             </h2>
-            
-            <Button
-              size="icon"
-              variant="outline"
-              onClick={nextMonth}
-            >
+
+            <Button size="icon" variant="outline" onClick={nextMonth}>
               <ChevronRight size={32} />
             </Button>
           </div>
@@ -318,10 +307,10 @@ export default function GroupCalendar() {
               {emptyDays.map((_, index) => (
                 <div key={`empty-${index}`} className="aspect-square" />
               ))}
-              
+
               {days.map((day) => {
                 const hasSchedule = monthSchedules[day] && monthSchedules[day].length > 0;
-                const isToday = 
+                const isToday =
                   day === new Date().getDate() &&
                   currentDate.getMonth() === new Date().getMonth() &&
                   currentDate.getFullYear() === new Date().getFullYear();
@@ -335,16 +324,14 @@ export default function GroupCalendar() {
                       isSelected
                         ? "bg-primary border-primary text-primary-foreground font-bold"
                         : isToday
-                        ? "bg-accent border-accent text-accent-foreground font-bold"
-                        : "border-border hover:border-primary/50"
+                          ? "bg-accent border-accent text-accent-foreground font-bold"
+                          : "border-border hover:border-primary/50"
                     }`}
                   >
                     <span className="text-senior-sm mb-1">{day}</span>
-                    
+
                     {hasSchedule && (
-                      <div className={`w-2 h-2 rounded-full ${
-                        isSelected ? "bg-primary-foreground" : "bg-primary"
-                      }`} />
+                      <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"}`} />
                     )}
                   </button>
                 );
@@ -360,9 +347,7 @@ export default function GroupCalendar() {
               {monthSchedules[selectedDate].map((schedule) => (
                 <Card key={schedule.id} className="p-4">
                   <div className="flex items-start justify-between mb-2">
-                    <h4 className="text-senior-base font-semibold flex-1">
-                      {schedule.title}
-                    </h4>
+                    <h4 className="text-senior-base font-semibold flex-1">{schedule.title}</h4>
                     {schedule.schedule_time && (
                       <span className="text-senior-sm text-muted-foreground flex-shrink-0 ml-2">
                         {formatTime(schedule.schedule_time)}
@@ -370,9 +355,7 @@ export default function GroupCalendar() {
                     )}
                   </div>
                   {schedule.description && (
-                    <p className="text-senior-sm text-muted-foreground">
-                      {schedule.description}
-                    </p>
+                    <p className="text-senior-sm text-muted-foreground">{schedule.description}</p>
                   )}
                 </Card>
               ))}
@@ -385,9 +368,7 @@ export default function GroupCalendar() {
             </div>
           ) : (
             <div className="mt-4 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
-              <p className="text-senior-sm text-center">
-                💚 가족과 공유된 일정만 표시됩니다
-              </p>
+              <p className="text-senior-sm text-center">💚 가족과 공유된 일정만 표시됩니다</p>
             </div>
           )}
         </div>
@@ -412,21 +393,15 @@ export default function GroupCalendar() {
               <ArrowLeft size={24} />
             </Button>
             <div>
-              <h2 className="text-senior-2xl font-bold text-secondary-foreground">
-                {selectedGroup.name}
-              </h2>
-              <p className="text-senior-sm text-muted-foreground">
-                구성원 {selectedGroup.member_count}명
-              </p>
+              <h2 className="text-senior-2xl font-bold text-secondary-foreground">{selectedGroup.name}</h2>
+              <p className="text-senior-sm text-muted-foreground">구성원 {selectedGroup.member_count}명</p>
             </div>
           </div>
 
           <div className="space-y-3">
             {familyMembers.length === 0 ? (
               <Card className="p-8 text-center">
-                <p className="text-senior-base text-muted-foreground">
-                  다른 구성원이 없습니다
-                </p>
+                <p className="text-senior-base text-muted-foreground">다른 구성원이 없습니다</p>
               </Card>
             ) : (
               familyMembers.map((member) => (
@@ -449,13 +424,9 @@ export default function GroupCalendar() {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-senior-lg font-semibold">
-                          {member.display_name}
-                        </h3>
+                        <h3 className="text-senior-lg font-semibold">{member.display_name}</h3>
                         {member.user_id === user?.id && (
-                          <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                            나
-                          </span>
+                          <span className="text-senior-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">나</span>
                         )}
                         {member.is_head && (
                           <span className="text-senior-xs bg-accent/10 text-accent px-2 py-0.5 rounded-full">
@@ -463,14 +434,10 @@ export default function GroupCalendar() {
                           </span>
                         )}
                       </div>
-                      <p className="text-senior-sm text-muted-foreground">
-                        캘린더 보기
-                      </p>
+                      <p className="text-senior-sm text-muted-foreground">캘린더 보기</p>
                     </div>
                     {getMoodEmoji(member.latest_mood) && (
-                      <div className="text-5xl flex-shrink-0">
-                        {getMoodEmoji(member.latest_mood)}
-                      </div>
+                      <div className="text-5xl flex-shrink-0">{getMoodEmoji(member.latest_mood)}</div>
                     )}
                   </div>
                 </Card>
@@ -487,29 +454,17 @@ export default function GroupCalendar() {
     <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
       <section className="pt-8 pb-4 max-w-2xl mx-auto w-full">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-senior-2xl font-bold text-secondary-foreground">
-            내 가족 그룹
-          </h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowManagement(true)}
-            className="gap-2"
-          >
+          <h2 className="text-senior-2xl font-bold text-secondary-foreground">내 그룹</h2>
+          <Button variant="outline" size="sm" onClick={() => setShowManagement(true)} className="gap-2">
             <Settings size={18} />
             그룹 관리
           </Button>
         </div>
-        
+
         {myGroups.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-senior-base text-muted-foreground mb-4">
-              아직 가족 그룹이 없어요
-            </p>
-            <Button
-              onClick={() => setShowManagement(true)}
-              className="gap-2"
-            >
+            <p className="text-senior-base text-muted-foreground mb-4">아직 가족 그룹이 없어요</p>
+            <Button onClick={() => setShowManagement(true)} className="gap-2">
               <Users size={20} />
               그룹 만들기
             </Button>
@@ -524,23 +479,16 @@ export default function GroupCalendar() {
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-senior-xl font-bold mb-1">
-                      {group.name}
-                    </h3>
-                    <p className="text-senior-sm text-muted-foreground">
-                      구성원 {group.member_count}명
-                    </p>
+                    <h3 className="text-senior-xl font-bold mb-1">{group.name}</h3>
+                    <p className="text-senior-sm text-muted-foreground">구성원 {group.member_count}명</p>
                   </div>
-                  <div className="text-4xl">
-                    👨‍👩‍👧‍👦
-                  </div>
+                  <div className="text-4xl">👨‍👩‍👧‍👦</div>
                 </div>
               </Card>
             ))}
           </div>
         )}
       </section>
-
     </div>
   );
 }
