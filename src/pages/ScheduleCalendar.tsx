@@ -232,12 +232,15 @@ export default function ScheduleCalendar({ onEditSchedule, onAddSchedule }: Sche
   };
 
   const fetchAIRecommendation = async () => {
-    if (!user?.user_metadata?.location_district) return;
+    if (!user?.user_metadata?.location_district || !user?.id) return;
 
     setIsLoadingRecommendation(true);
     try {
       const { data, error } = await supabase.functions.invoke('get-activity-recommendations', {
-        body: { district: user.user_metadata.location_district }
+        body: { 
+          district: user.user_metadata.location_district,
+          userId: user.id
+        }
       });
 
       if (error) throw error;

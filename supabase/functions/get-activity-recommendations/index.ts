@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { district } = await req.json();
+    const { district, userId } = await req.json();
 
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -28,6 +28,24 @@ serve(async (req) => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
+    // Fetch user's schedules for today
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const { data: userSchedules, error: schedulesError } = await supabase
+      .from("schedules")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("start_time", todayStart.toISOString())
+      .lte("start_time", todayEnd.toISOString())
+      .order("start_time", { ascending: true });
+
+    if (schedulesError) {
+      console.error("Error fetching user schedules:", schedulesError);
+    }
 
     // Fetch cultural events for the district
     const today = new Date().toISOString();
@@ -70,8 +88,28 @@ serve(async (req) => {
         ? spaces.map((s) => `- ${s.name} (${s.address}): ${s.description || s.category || "문화 공간"}`).join("\n")
         : "현재 등록된 문화 공간이 없습니다.";
 
+    const schedulesContext =
+      userSchedules && userSchedules.length > 0
+        ? userSchedules
+            .map((s) => {
+              const startTime = new Date(s.start_time).toLocaleTimeString("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              const endTime = new Date(s.end_time).toLocaleTimeString("ko-KR", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+              return `- ${startTime} ~ ${endTime}: ${s.title}${s.location ? ` (${s.location})` : ""}`;
+            })
+            .join("\n")
+        : "오늘 등록된 일정이 없습니다.";
+
     const prompt = `당신은 어르신들을 위한 친절한 활동 추천 도우미입니다. 
-${district} 지역의 문화 정보를 바탕으로, 오늘 하루 즐길 수 있는 활동을 3개 추천해주세요.
+${district} 지역의 문화 정보를 바탕으로, 사용자의 기존 일정과 겹치지 않는 시간대에 즐길 수 있는 활동을 3개 추천해주세요.
+
+사용자의 오늘 일정:
+${schedulesContext}
 
 이용 가능한 문화 행사:
 ${eventsContext}
@@ -84,7 +122,10 @@ ${spacesContext}
 2. **활동명**: 간단한 설명 (최대 40자)
 3. **활동명**: 간단한 설명 (최대 40자)
 
-CRITICAL: 설명은 반드시 40자 이내로 작성하세요. 간결하고 핵심만 담아주세요.
+CRITICAL: 
+- 설명은 반드시 40자 이내로 작성하세요. 간결하고 핵심만 담아주세요.
+- 사용자의 기존 일정 시간과 겹치지 않는 활동을 추천해주세요.
+- 일정 사이의 빈 시간이나 일정 전후 시간을 활용할 수 있는 활동을 우선 추천해주세요.
 
 추천은 어르신들이 즐길 수 있고, 건강에 좋으며, 접근하기 쉬운 활동 위주로 해주세요.
 가능하면 위의 실제 데이터에서 활동을 선택하되, 없다면 일반적인 건강하고 유익한 활동을 추천해주세요.
