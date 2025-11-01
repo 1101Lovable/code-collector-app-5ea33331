@@ -47,12 +47,6 @@ export default function Auth() {
     "제주특별자치도": ["서귀포시", "제주시"]
   };
 
-  // Convert phone number to email format for Supabase
-  const phoneToEmail = (phoneNumber: string) => {
-    const cleanPhone = phoneNumber.replace(/[^0-9]/g, "");
-    return `${cleanPhone}@phone.local`;
-  };
-
   // Format phone number for display
   const formatPhone = (value: string) => {
     const numbers = value.replace(/[^0-9]/g, "");
@@ -87,10 +81,10 @@ export default function Auth() {
     }
 
     try {
-      const email = phoneToEmail(cleanPhone);
+      const formattedPhone = `+82${cleanPhone.slice(1)}`; // 010-1234-5678 -> +821012345678
       const { error } = isLogin
-        ? await signIn(email, password)
-        : await signUp(email, password, displayName, locationCity, locationDistrict, locationDong, cleanPhone);
+        ? await signIn(formattedPhone, password)
+        : await signUp(formattedPhone, password, displayName, locationCity, locationDistrict, locationDong, cleanPhone);
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
