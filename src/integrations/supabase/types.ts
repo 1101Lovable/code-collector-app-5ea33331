@@ -333,6 +333,10 @@ export type Database = {
     }
     Functions: {
       generate_invite_code: { Args: never; Returns: string }
+      is_family_head: {
+        Args: { _family_group_id: string; _user_id: string }
+        Returns: boolean
+      }
       user_family_groups: {
         Args: { _user_id: string }
         Returns: {
