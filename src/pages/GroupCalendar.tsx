@@ -6,6 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import FamilyManagement from "./FamilyManagement";
 
+const moods = [
+  { id: "good", emoji: "😊", label: "좋음" },
+  { id: "okay", emoji: "🙂", label: "보통" },
+  { id: "sad", emoji: "😥", label: "속상함" },
+  { id: "sick", emoji: "🤒", label: "아파요" },
+];
+
 interface FamilyGroup {
   id: string;
   name: string;
@@ -209,6 +216,12 @@ export default function GroupCalendar() {
     const ampm = hour >= 12 ? "오후" : "오전";
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
     return `${ampm} ${displayHour}:${minutes}`;
+  };
+
+  const getMoodEmoji = (mood: string | null) => {
+    if (!mood) return null;
+    const moodData = moods.find((m) => m.id === mood);
+    return moodData?.emoji || null;
   };
 
   const prevMonth = () => {
@@ -447,9 +460,9 @@ export default function GroupCalendar() {
                         캘린더 보기
                       </p>
                     </div>
-                    {member.latest_mood && (
-                      <div className="text-4xl flex-shrink-0">
-                        {member.latest_mood}
+                    {getMoodEmoji(member.latest_mood) && (
+                      <div className="text-5xl flex-shrink-0">
+                        {getMoodEmoji(member.latest_mood)}
                       </div>
                     )}
                   </div>
