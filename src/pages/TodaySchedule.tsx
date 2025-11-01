@@ -238,25 +238,40 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
         if (memberships && memberships.length > 0) {
           const groupIds = memberships.map((m) => m.family_group_id);
 
-          // Get shared schedules through schedule_family_shares
-          const { data: sharedSchedulesData } = await supabase
-            .from("schedule_family_shares")
-            .select(`
-              schedule_id,
-              family_group_id,
-              family_groups!inner(name),
-              schedules!inner(*)
-            `)
-            .in("family_group_id", groupIds)
-            .eq("schedules.schedule_date", today);
+          // Get family groups info
+          const { data: groups } = await supabase
+            .from("family_groups")
+            .select("id, name")
+            .in("id", groupIds);
 
-          if (sharedSchedulesData && sharedSchedulesData.length > 0) {
-            familySchedules = sharedSchedulesData
-              .filter((item: any) => item.schedules.user_id !== user.id)
-              .map((item: any) => ({
-                ...item.schedules,
-                group_name: item.family_groups.name,
-              }));
+          const groupMap = new Map(groups?.map(g => [g.id, g.name]) || []);
+
+          // Get shared schedules through schedule_family_shares
+          const { data: shares } = await supabase
+            .from("schedule_family_shares")
+            .select("schedule_id, family_group_id")
+            .in("family_group_id", groupIds);
+
+          if (shares && shares.length > 0) {
+            const scheduleIds = shares.map((s) => s.schedule_id);
+
+            // Get the actual schedules
+            const { data: sharedSchedules } = await supabase
+              .from("schedules")
+              .select("*")
+              .in("id", scheduleIds)
+              .eq("schedule_date", today)
+              .neq("user_id", user.id);
+
+            // Map group names to schedules
+            familySchedules = (sharedSchedules || []).map((schedule) => {
+              const share = shares.find((s) => s.schedule_id === schedule.id);
+              const groupName = share ? groupMap.get(share.family_group_id) : null;
+              return {
+                ...schedule,
+                group_name: groupName,
+              };
+            });
           }
         }
 
