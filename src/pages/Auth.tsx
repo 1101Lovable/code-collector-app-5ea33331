@@ -74,11 +74,6 @@ export default function Auth() {
     <div className="flex min-h-screen items-center justify-center px-6 py-12 bg-gradient-to-br from-primary/10 to-accent/10">
       <Card className="w-full max-w-md p-8 shadow-2xl">
         <div className="text-center mb-8">
-          <div className="mb-6 flex justify-center">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-              <Phone className="text-primary" size={40} />
-            </div>
-          </div>
           <h1 className="text-senior-2xl mb-3">
             {isLogin ? "로그인" : "회원가입"}
           </h1>
@@ -121,7 +116,7 @@ export default function Auth() {
               className="h-16 text-senior-base px-6 border-2"
             />
             <p className="text-senior-sm text-muted-foreground">
-              ⚠️ 하이픈(-) 없이 숫자만 입력하세요
+              숫자만 입력하세요
             </p>
           </div>
 
