@@ -33,49 +33,38 @@ export default function FamilyNews() {
 
     const fetchFamilyMembers = async () => {
       try {
-        // Get family groups the user belongs to
-        const { data: familyMemberships, error: membershipError } = await supabase
-          .from("family_members")
-          .select("family_group_id")
-          .eq("user_id", user.id);
+        // Get current user's family group code
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("family_group_code")
+          .eq("user_id", user.id)
+          .single();
 
-        if (membershipError) throw membershipError;
+        if (profileError) throw profileError;
 
-        if (!familyMemberships || familyMemberships.length === 0) {
+        if (!userProfile?.family_group_code) {
           setFamilyMembers([]);
           setLoading(false);
           return;
         }
 
-        const familyGroupIds = familyMemberships.map((m) => m.family_group_id);
-
-        // Get all members in these family groups
-        const { data: members, error: membersError } = await supabase
-          .from("family_members")
-          .select("user_id")
-          .in("family_group_id", familyGroupIds);
-
-        if (membersError) throw membersError;
-
-        if (!members || members.length === 0) {
-          setFamilyMembers([]);
-          setLoading(false);
-          return;
-        }
-
-        const userIds = members.map((m) => m.user_id);
-
-        // Get profiles
+        // Get all profiles with the same family group code
         const { data: profiles, error: profilesError } = await supabase
           .from("profiles")
           .select("user_id, display_name, avatar_url")
-          .in("user_id", userIds);
+          .eq("family_group_code", userProfile.family_group_code);
 
         if (profilesError) throw profilesError;
 
+        if (!profiles || profiles.length === 0) {
+          setFamilyMembers([]);
+          setLoading(false);
+          return;
+        }
+
         // Get latest mood for each user
         const familyData: FamilyMember[] = await Promise.all(
-          (profiles || []).map(async (profile) => {
+          profiles.map(async (profile) => {
             const { data: moodData } = await supabase
               .from("mood_records")
               .select("mood, recorded_at")
