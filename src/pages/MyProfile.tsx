@@ -132,7 +132,7 @@ export default function MyProfile() {
   return (
     <div className="min-h-screen pb-24 px-4 pt-8">
       <div className="max-w-2xl mx-auto">
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <h1 className="text-senior-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
             내 정보
           </h1>
