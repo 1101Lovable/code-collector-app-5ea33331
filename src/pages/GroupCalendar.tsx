@@ -1,10 +1,17 @@
-import { ChevronLeft, ChevronRight, Settings } from "lucide-react";
+import { ChevronLeft, ChevronRight, Settings, Users, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import FamilyManagement from "./FamilyManagement";
+
+interface FamilyGroup {
+  id: string;
+  name: string;
+  invite_code: string;
+  member_count: number;
+}
 
 interface FamilyMember {
   user_id: string;
@@ -15,6 +22,8 @@ interface FamilyMember {
 export default function GroupCalendar() {
   const { user } = useAuth();
   const [showManagement, setShowManagement] = useState(false);
+  const [myGroups, setMyGroups] = useState<FamilyGroup[]>([]);
+  const [selectedGroup, setSelectedGroup] = useState<FamilyGroup | null>(null);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -34,8 +43,14 @@ export default function GroupCalendar() {
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i);
 
   useEffect(() => {
-    fetchFamilyMembers();
+    fetchMyGroups();
   }, [user]);
+
+  useEffect(() => {
+    if (selectedGroup) {
+      fetchFamilyMembers();
+    }
+  }, [selectedGroup]);
 
   useEffect(() => {
     if (selectedMember) {
@@ -43,12 +58,12 @@ export default function GroupCalendar() {
     }
   }, [selectedMember, currentDate]);
 
-  const fetchFamilyMembers = async () => {
+  const fetchMyGroups = async () => {
     if (!user) return;
 
     try {
-      // Get current user's group code
-      const { data: userProfile, error: profileError } = await supabase
+      // Get user's profile with group code
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("family_group_code")
         .eq("user_id", user.id)
@@ -56,24 +71,51 @@ export default function GroupCalendar() {
 
       if (profileError) throw profileError;
 
-      if (!userProfile?.family_group_code) {
-        setFamilyMembers([]);
+      if (!profile?.family_group_code) {
+        setMyGroups([]);
         return;
       }
 
+      // Get group details
+      const { data: group, error: groupError } = await supabase
+        .from("family_groups")
+        .select("*")
+        .eq("invite_code", profile.family_group_code)
+        .single();
+
+      if (groupError) throw groupError;
+
+      // Get member count
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("family_group_code", profile.family_group_code);
+
+      setMyGroups([{
+        id: group.id,
+        name: group.name,
+        invite_code: group.invite_code,
+        member_count: count || 0,
+      }]);
+    } catch (error: any) {
+      console.error("Error fetching groups:", error);
+    }
+  };
+
+  const fetchFamilyMembers = async () => {
+    if (!user || !selectedGroup) return;
+
+    try {
       // Get all profiles with same group code (excluding current user)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url")
-        .eq("family_group_code", userProfile.family_group_code)
+        .eq("family_group_code", selectedGroup.invite_code)
         .neq("user_id", user.id);
 
       if (profilesError) throw profilesError;
 
       setFamilyMembers(profiles || []);
-      if (profiles && profiles.length > 0) {
-        setSelectedMember(profiles[0].user_id);
-      }
     } catch (error: any) {
       console.error("Error fetching family members:", error);
     }
@@ -127,13 +169,191 @@ export default function GroupCalendar() {
     return <FamilyManagement onBack={() => setShowManagement(false)} />;
   }
 
+  // View 3: Member's Calendar
+  if (selectedMember && selectedGroup) {
+    return (
+      <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
+        {/* Header with back button */}
+        <section className="pt-8 pb-4 max-w-2xl mx-auto w-full">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setSelectedMember(null);
+                setMonthSchedules({});
+              }}
+            >
+              <ArrowLeft size={24} />
+            </Button>
+            <h2 className="text-senior-xl font-bold text-secondary-foreground">
+              {selectedMemberData?.display_name}님의 캘린더
+            </h2>
+          </div>
+        </section>
+
+        {/* Month Navigator */}
+        <div className="pb-4 max-w-2xl mx-auto w-full">
+          <div className="flex items-center justify-between">
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={prevMonth}
+            >
+              <ChevronLeft size={32} />
+            </Button>
+            
+            <h2 className="text-senior-xl font-bold">
+              {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
+            </h2>
+            
+            <Button
+              size="icon"
+              variant="outline"
+              onClick={nextMonth}
+            >
+              <ChevronRight size={32} />
+            </Button>
+          </div>
+        </div>
+
+        {/* Calendar Grid */}
+        <div className="pb-6 max-w-2xl mx-auto w-full">
+          <Card className="p-4">
+            {/* Day Headers */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
+              {["일", "월", "화", "수", "목", "금", "토"].map((day, index) => (
+                <div
+                  key={day}
+                  className={`text-center text-senior-base py-3 ${
+                    index === 0 ? "text-destructive" : index === 6 ? "text-primary" : ""
+                  }`}
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar Days */}
+            <div className="grid grid-cols-7 gap-2">
+              {emptyDays.map((_, index) => (
+                <div key={`empty-${index}`} className="aspect-square" />
+              ))}
+              
+              {days.map((day) => {
+                const hasSchedule = monthSchedules[day] && monthSchedules[day].length > 0;
+                const isToday = 
+                  day === new Date().getDate() &&
+                  currentDate.getMonth() === new Date().getMonth() &&
+                  currentDate.getFullYear() === new Date().getFullYear();
+
+                return (
+                  <div
+                    key={day}
+                    className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all ${
+                      isToday
+                        ? "bg-accent border-accent text-accent-foreground font-bold"
+                        : "border-border"
+                    }`}
+                  >
+                    <span className="text-senior-sm mb-1">{day}</span>
+                    
+                    {hasSchedule && (
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </Card>
+
+          <div className="mt-4 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
+            <p className="text-senior-sm text-center">
+              💚 가족과 공유된 일정만 표시됩니다
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // View 2: Group Members
+  if (selectedGroup) {
+    return (
+      <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
+        <section className="pt-8 max-w-2xl mx-auto w-full">
+          <div className="flex items-center gap-4 mb-6">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setSelectedGroup(null);
+                setFamilyMembers([]);
+              }}
+            >
+              <ArrowLeft size={24} />
+            </Button>
+            <div>
+              <h2 className="text-senior-2xl font-bold text-secondary-foreground">
+                {selectedGroup.name}
+              </h2>
+              <p className="text-senior-sm text-muted-foreground">
+                구성원 {selectedGroup.member_count}명
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            {familyMembers.length === 0 ? (
+              <Card className="p-8 text-center">
+                <p className="text-senior-base text-muted-foreground">
+                  다른 구성원이 없습니다
+                </p>
+              </Card>
+            ) : (
+              familyMembers.map((member) => (
+                <Card
+                  key={member.user_id}
+                  className="p-4 cursor-pointer hover:bg-accent/5 transition-colors"
+                  onClick={() => setSelectedMember(member.user_id)}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl flex-shrink-0">
+                      {member.avatar_url ? (
+                        <img
+                          src={member.avatar_url}
+                          alt={member.display_name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        "👤"
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-senior-lg font-semibold">
+                        {member.display_name}
+                      </h3>
+                      <p className="text-senior-sm text-muted-foreground">
+                        캘린더 보기
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              ))
+            )}
+          </div>
+        </section>
+      </div>
+    );
+  }
+
+  // View 1: Group List
   return (
     <div className="flex flex-col min-h-screen pb-24 bg-gradient-to-br from-background via-background to-secondary/30 px-4">
-      {/* Family Members Selection */}
       <section className="pt-8 pb-4 max-w-2xl mx-auto w-full">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            가족 구성원
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-senior-2xl font-bold text-secondary-foreground">
+            내 가족 그룹
           </h2>
           <Button
             variant="outline"
@@ -146,125 +366,46 @@ export default function GroupCalendar() {
           </Button>
         </div>
         
-        {familyMembers.length === 0 ? (
-          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50">
-            <p className="text-senior-base text-muted-foreground">아직 가족 그룹이 없어요</p>
-          </div>
+        {myGroups.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-senior-base text-muted-foreground mb-4">
+              아직 가족 그룹이 없어요
+            </p>
+            <Button
+              onClick={() => setShowManagement(true)}
+              className="gap-2"
+            >
+              <Users size={20} />
+              그룹 만들기
+            </Button>
+          </Card>
         ) : (
-          <div className="flex gap-3 overflow-x-auto pb-2">
-            {familyMembers.map((member) => (
-              <button
-                key={member.user_id}
-                onClick={() => setSelectedMember(member.user_id)}
-                className={`flex-shrink-0 flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                  selectedMember === member.user_id
-                    ? "bg-primary/10 border-primary"
-                    : "bg-card/90 border-border/50 hover:border-primary/30"
-                }`}
+          <div className="space-y-3">
+            {myGroups.map((group) => (
+              <Card
+                key={group.id}
+                className="p-6 cursor-pointer hover:bg-accent/5 transition-colors"
+                onClick={() => setSelectedGroup(group)}
               >
-                <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center text-3xl">
-                  {member.avatar_url ? (
-                    <img
-                      src={member.avatar_url}
-                      alt={member.display_name}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                  ) : (
-                    "👤"
-                  )}
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-senior-xl font-bold mb-1">
+                      {group.name}
+                    </h3>
+                    <p className="text-senior-sm text-muted-foreground">
+                      구성원 {group.member_count}명
+                    </p>
+                  </div>
+                  <div className="text-4xl">
+                    👨‍👩‍👧‍👦
+                  </div>
                 </div>
-                <span className="text-senior-sm font-semibold">{member.display_name}</span>
-              </button>
+              </Card>
             ))}
           </div>
         )}
       </section>
 
-      {selectedMember && (
-        <>
-          {/* Month Navigator */}
-          <div className="pb-4 max-w-2xl mx-auto w-full">
-            <div className="flex items-center justify-between">
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={prevMonth}
-              >
-                <ChevronLeft size={32} />
-              </Button>
-              
-              <h2 className="text-senior-xl font-bold">
-                {selectedMemberData?.display_name}님의 {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
-              </h2>
-              
-              <Button
-                size="icon"
-                variant="outline"
-                onClick={nextMonth}
-              >
-                <ChevronRight size={32} />
-              </Button>
-            </div>
-          </div>
-
-          {/* Calendar Grid */}
-          <div className="pb-6 max-w-2xl mx-auto w-full">
-            <Card className="p-4">
-              {/* Day Headers */}
-              <div className="grid grid-cols-7 gap-2 mb-4">
-                {["일", "월", "화", "수", "목", "금", "토"].map((day, index) => (
-                  <div
-                    key={day}
-                    className={`text-center text-senior-base py-3 ${
-                      index === 0 ? "text-destructive" : index === 6 ? "text-primary" : ""
-                    }`}
-                  >
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              {/* Calendar Days */}
-              <div className="grid grid-cols-7 gap-2">
-                {emptyDays.map((_, index) => (
-                  <div key={`empty-${index}`} className="aspect-square" />
-                ))}
-                
-                {days.map((day) => {
-                  const hasSchedule = monthSchedules[day] && monthSchedules[day].length > 0;
-                  const isToday = 
-                    day === new Date().getDate() &&
-                    currentDate.getMonth() === new Date().getMonth() &&
-                    currentDate.getFullYear() === new Date().getFullYear();
-
-                  return (
-                    <div
-                      key={day}
-                      className={`aspect-square flex flex-col items-center justify-center rounded-lg border-2 transition-all ${
-                        isToday
-                          ? "bg-accent border-accent text-accent-foreground font-bold"
-                          : "border-border"
-                      }`}
-                    >
-                      <span className="text-senior-sm mb-1">{day}</span>
-                      
-                      {hasSchedule && (
-                        <div className="w-2 h-2 rounded-full bg-primary" />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-
-            <div className="mt-4 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
-              <p className="text-senior-sm text-center">
-                💚 가족과 공유된 일정만 표시됩니다
-              </p>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }
