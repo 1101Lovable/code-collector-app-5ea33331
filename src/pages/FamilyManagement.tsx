@@ -50,48 +50,40 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
     if (!user) return;
 
     try {
-      // Get all family groups the user is a member of
-      const { data: memberships, error: membershipError } = await supabase
-        .from("family_members")
-        .select("family_group_id, is_head")
-        .eq("user_id", user.id);
+      // Get user's profile with group code
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("family_group_code, is_family_head")
+        .eq("user_id", user.id)
+        .single();
 
-      if (membershipError) throw membershipError;
+      if (profileError) throw profileError;
 
-      if (!memberships || memberships.length === 0) {
+      if (!profile?.family_group_code) {
         setMyGroups([]);
         return;
       }
 
-      const groupIds = memberships.map((m) => m.family_group_id);
-
       // Get group details
-      const { data: groups, error: groupsError } = await supabase
+      const { data: group, error: groupError } = await supabase
         .from("family_groups")
         .select("*")
-        .in("id", groupIds);
+        .eq("invite_code", profile.family_group_code)
+        .single();
 
-      if (groupsError) throw groupsError;
+      if (groupError) throw groupError;
 
-      // Get member count for each group
-      const groupsWithCount = await Promise.all(
-        (groups || []).map(async (group) => {
-          const { count } = await supabase
-            .from("family_members")
-            .select("*", { count: "exact", head: true })
-            .eq("family_group_id", group.id);
+      // Get member count
+      const { count } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .eq("family_group_code", profile.family_group_code);
 
-          const membership = memberships.find((m) => m.family_group_id === group.id);
-
-          return {
-            ...group,
-            member_count: count || 0,
-            is_head: membership?.is_head || false,
-          };
-        })
-      );
-
-      setMyGroups(groupsWithCount);
+      setMyGroups([{
+        ...group,
+        member_count: count || 0,
+        is_head: profile.is_family_head,
+      }]);
     } catch (error: any) {
       console.error("Error fetching groups:", error);
       toast.error("그룹 정보를 불러오는데 실패했습니다");
@@ -118,16 +110,16 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
       if (groupError) throw groupError;
 
-      // Add creator as a member and set as head
-      const { error: memberError } = await supabase
-        .from("family_members")
-        .insert({
-          family_group_id: newGroup.id,
-          user_id: user.id,
-          is_head: true,
-        });
+      // Update user profile with group code and set as head
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({
+          family_group_code: newGroup.invite_code,
+          is_family_head: true,
+        })
+        .eq("user_id", user.id);
 
-      if (memberError) throw memberError;
+      if (profileError) throw profileError;
 
       toast.success("가족 그룹이 생성되었습니다!", {
         description: `초대 코드: ${newGroup.invite_code}`,
@@ -171,27 +163,24 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
       }
 
       // Check if already a member
-      const { data: existingMember } = await supabase
-        .from("family_members")
-        .select("*")
-        .eq("family_group_id", group.id)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("family_group_code")
         .eq("user_id", user.id)
         .single();
 
-      if (existingMember) {
+      if (profile?.family_group_code === group.invite_code) {
         toast.error("이미 참여한 그룹입니다");
         return;
       }
 
-      // Add as member
-      const { error: memberError } = await supabase
-        .from("family_members")
-        .insert({
-          family_group_id: group.id,
-          user_id: user.id,
-        });
+      // Update profile with group code
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update({ family_group_code: group.invite_code })
+        .eq("user_id", user.id);
 
-      if (memberError) throw memberError;
+      if (profileError) throw profileError;
 
       toast.success(`"${group.name}" 그룹에 참여했습니다!`);
       setInviteCode("");

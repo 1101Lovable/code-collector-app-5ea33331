@@ -47,38 +47,26 @@ export default function GroupCalendar() {
     if (!user) return;
 
     try {
-      const { data: familyMemberships, error: membershipError } = await supabase
-        .from("family_members")
-        .select("family_group_id")
-        .eq("user_id", user.id);
+      // Get current user's group code
+      const { data: userProfile, error: profileError } = await supabase
+        .from("profiles")
+        .select("family_group_code")
+        .eq("user_id", user.id)
+        .single();
 
-      if (membershipError) throw membershipError;
+      if (profileError) throw profileError;
 
-      if (!familyMemberships || familyMemberships.length === 0) {
+      if (!userProfile?.family_group_code) {
         setFamilyMembers([]);
         return;
       }
 
-      const familyGroupIds = familyMemberships.map((m) => m.family_group_id);
-
-      const { data: members, error: membersError } = await supabase
-        .from("family_members")
-        .select("user_id")
-        .in("family_group_id", familyGroupIds);
-
-      if (membersError) throw membersError;
-
-      if (!members || members.length === 0) {
-        setFamilyMembers([]);
-        return;
-      }
-
-      const userIds = members.map((m) => m.user_id).filter((id) => id !== user.id);
-
+      // Get all profiles with same group code (excluding current user)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url")
-        .in("user_id", userIds);
+        .eq("family_group_code", userProfile.family_group_code)
+        .neq("user_id", user.id);
 
       if (profilesError) throw profilesError;
 

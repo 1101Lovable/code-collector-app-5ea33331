@@ -249,7 +249,9 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string
+          family_group_code: string | null
           id: string
+          is_family_head: boolean | null
           location_city: string | null
           location_district: string | null
           location_dong: string | null
@@ -260,7 +262,9 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name: string
+          family_group_code?: string | null
           id?: string
+          is_family_head?: boolean | null
           location_city?: string | null
           location_district?: string | null
           location_dong?: string | null
@@ -271,14 +275,24 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string
+          family_group_code?: string | null
           id?: string
+          is_family_head?: boolean | null
           location_city?: string | null
           location_district?: string | null
           location_dong?: string | null
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_family_group_code_fkey"
+            columns: ["family_group_code"]
+            isOneToOne: false
+            referencedRelation: "family_groups"
+            referencedColumns: ["invite_code"]
+          },
+        ]
       }
       schedules: {
         Row: {
