@@ -1,5 +1,4 @@
 import { Calendar, Users } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 interface BottomTabBarProps {
   activeTab: "schedule" | "family";
@@ -8,35 +7,27 @@ interface BottomTabBarProps {
 
 export default function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background border-t-2 border-border shadow-2xl z-50">
-      <div className="grid grid-cols-2 gap-0">
-        <Button
-          variant="ghost"
-          size="xl"
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 rounded-t-3xl shadow-inner">
+      <div className="flex justify-around items-center h-20 max-w-screen-lg mx-auto px-4">
+        <button
           onClick={() => onTabChange("schedule")}
-          className={`rounded-none h-20 flex-col gap-2 ${
-            activeTab === "schedule"
-              ? "bg-primary/10 text-primary border-t-4 border-primary"
-              : "text-muted-foreground"
+          className={`flex flex-col items-center justify-center gap-1 px-6 py-2 transition-colors ${
+            activeTab === "schedule" ? "text-primary font-bold" : "text-muted-foreground"
           }`}
         >
-          <Calendar size={32} />
+          <Calendar size={22} />
           <span className="text-senior-sm">오늘 일정</span>
-        </Button>
+        </button>
 
-        <Button
-          variant="ghost"
-          size="xl"
+        <button
           onClick={() => onTabChange("family")}
-          className={`rounded-none h-20 flex-col gap-2 ${
-            activeTab === "family"
-              ? "bg-primary/10 text-primary border-t-4 border-primary"
-              : "text-muted-foreground"
+          className={`flex flex-col items-center justify-center gap-1 px-6 py-2 transition-colors ${
+            activeTab === "family" ? "text-primary font-bold" : "text-muted-foreground"
           }`}
         >
-          <Users size={32} />
+          <Users size={22} />
           <span className="text-senior-sm">가족 소식</span>
-        </Button>
+        </button>
       </div>
     </nav>
   );

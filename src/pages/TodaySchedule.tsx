@@ -1,4 +1,4 @@
-import { Calendar, MapPin, Plus, Sparkles, LogOut } from "lucide-react";
+import { Calendar, MapPin, Plus, Sparkles, LogOut, Sun, CloudRain, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { motion } from "framer-motion";
 
 interface TodayScheduleProps {
   onAddSchedule: () => void;
@@ -125,102 +126,106 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   ];
 
   return (
-    <div className="flex flex-col min-h-screen pb-24">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary pb-24 flex flex-col items-center px-6">
       {/* Weather and Date Section */}
-      <section className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 rounded-b-3xl shadow-lg">
-        <div className="flex items-center justify-between mb-4">
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm">
+      <div className="w-full max-w-lg bg-card rounded-3xl shadow-md p-6 mt-6">
+        <div className="flex justify-between items-center text-muted-foreground mb-2">
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm h-auto p-0">
             <LogOut size={20} />
-            로그아웃
+            <span className="ml-2">로그아웃</span>
           </Button>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-senior-2xl mb-2">
-              {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}
-              요일
-            </h1>
-            {user?.user_metadata?.location_district && (
-              <p className="text-senior-lg text-muted-foreground">
-                서울특별시 {user.user_metadata.location_district}
-              </p>
-            )}
-          </div>
           {weather && (
-            <div className="text-center">
-              <div className="text-senior-3xl">{getWeatherEmoji(weather.weathercode)}</div>
-              <p className="text-senior-xl mt-2">{weather.temperature}°C</p>
+            <div className="flex items-center gap-2">
+              {weather.weathercode <= 3 ? (
+                <Sun className="text-primary" size={26} />
+              ) : (
+                <CloudRain className="text-blue-500" size={26} />
+              )}
+              <span className="text-primary font-semibold text-senior-lg">
+                {weather.temperature}°C
+              </span>
             </div>
           )}
         </div>
-      </section>
+        <h1 className="text-senior-3xl font-extrabold text-primary mt-1">
+          {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
+        </h1>
+        {user?.user_metadata?.location_district && (
+          <p className="text-senior-lg text-foreground mt-2">
+            서울특별시 {user.user_metadata.location_district}
+          </p>
+        )}
+      </div>
 
       {/* Today's Schedule */}
-      <section className="px-6 pt-8">
-        <h2 className="text-senior-xl mb-6 flex items-center gap-3">
-          <Calendar className="text-primary" />
+      <section className="w-full max-w-lg mt-6">
+        <h2 className="text-senior-2xl font-bold text-primary mb-3 flex items-center gap-2">
+          <Calendar size={22} className="text-primary" />
           오늘의 일정
         </h2>
 
         {schedules.length === 0 ? (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center border-border">
             <p className="text-senior-base text-muted-foreground">오늘은 일정이 없어요</p>
           </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="flex flex-col gap-3">
             {schedules.map((schedule) => (
-              <Card key={schedule.id} className="p-6 shadow-md hover:shadow-lg transition-shadow">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <p className="text-senior-lg text-primary mb-2">{schedule.time}</p>
-                    <p className="text-senior-base">{schedule.title}</p>
-                  </div>
-                  {schedule.shared && (
-                    <span className="text-senior-sm bg-accent/20 px-4 py-2 rounded-full whitespace-nowrap ml-4">
-                      👨‍👩‍👧 가족 공유
-                    </span>
-                  )}
+              <div
+                key={schedule.id}
+                className="bg-card rounded-2xl p-4 shadow-sm border border-border flex justify-between items-center"
+              >
+                <div>
+                  <p className="text-primary font-bold text-senior-xl">{schedule.time}</p>
+                  <p className="text-foreground text-senior-lg mt-1">{schedule.title}</p>
                 </div>
-              </Card>
+                {schedule.shared && (
+                  <div className="flex items-center gap-1 bg-secondary px-2 py-1 rounded-full text-senior-sm text-foreground">
+                    <Users size={14} /> 가족 공유
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}
       </section>
 
       {/* AI Recommendations */}
-      <section className="px-6 pt-8 pb-6">
-        <h2 className="text-senior-xl mb-6 flex items-center gap-3">
-          <Sparkles className="text-accent" />
-          오늘 뭐 할까요? 💡
+      <section className="w-full max-w-lg mt-8 pb-6">
+        <h2 className="text-senior-2xl font-bold text-primary mb-3 flex items-center gap-2">
+          ✨ 오늘 뭐 할까요? 💡
         </h2>
 
-        <div className="space-y-4">
+        <div className="flex flex-col gap-3">
           {recommendations.map((rec) => (
-            <Card
+            <div
               key={rec.id}
-              className="p-6 shadow-md hover:shadow-lg transition-all hover:scale-[1.02] cursor-pointer"
+              className="bg-card rounded-2xl p-4 shadow-sm border border-border flex items-center gap-4 cursor-pointer hover:shadow-md transition-shadow"
             >
-              <div className="flex items-center gap-6">
-                <div className="text-senior-3xl min-w-[80px] min-h-[80px] bg-secondary rounded-2xl flex items-center justify-center">
-                  {rec.image}
-                </div>
-                <div className="flex-1">
-                  <p className="text-senior-lg mb-2">{rec.title}</p>
-                  <p className="text-senior-base text-muted-foreground flex items-center gap-2">
-                    <MapPin size={24} />
-                    {rec.location}
-                  </p>
-                </div>
+              <div className="text-primary text-senior-3xl">
+                {rec.image}
               </div>
-            </Card>
+              <div>
+                <p className="text-senior-lg font-semibold text-foreground">{rec.title}</p>
+                <p className="text-senior-base text-muted-foreground flex items-center gap-1">
+                  <MapPin size={18} />
+                  {rec.location}
+                </p>
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
       {/* Floating Action Button */}
-      <Button size="xl" onClick={onAddSchedule} className="fixed bottom-28 right-6 rounded-full shadow-2xl w-20 h-20">
-        <Plus size={48} />
-      </Button>
+      <motion.button
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={onAddSchedule}
+        className="fixed bottom-28 right-10 bg-primary text-primary-foreground rounded-full w-16 h-16 flex items-center justify-center text-4xl shadow-lg hover:bg-primary/90"
+      >
+        +
+      </motion.button>
     </div>
   );
 }

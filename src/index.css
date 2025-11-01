@@ -8,40 +8,39 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Warm family-friendly palette with cozy tones */
-    --background: 35 40% 97%;
-    --foreground: 25 25% 25%;
+    /* Orange and amber warm palette */
+    --background: 33 100% 96%;
+    --foreground: 20 14.3% 4.1%;
 
-    --card: 30 45% 99%;
-    --card-foreground: 25 25% 25%;
+    --card: 0 0% 100%;
+    --card-foreground: 20 14.3% 4.1%;
 
-    --popover: 30 45% 99%;
-    --popover-foreground: 25 25% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 20 14.3% 4.1%;
 
-    /* Warm coral-orange for primary actions */
-    --primary: 15 80% 65%;
+    /* Vibrant orange for primary */
+    --primary: 25 95% 53%;
     --primary-foreground: 0 0% 100%;
 
-    /* Soft peach for secondary actions */
-    --secondary: 30 60% 88%;
-    --secondary-foreground: 25 25% 25%;
+    /* Soft amber for secondary */
+    --secondary: 43 96% 89%;
+    --secondary-foreground: 25 90% 25%;
 
-    --muted: 35 30% 94%;
-    --muted-foreground: 25 20% 50%;
+    --muted: 33 100% 96%;
+    --muted-foreground: 25 5.3% 44.7%;
 
-    /* Golden yellow accent for highlights */
-    --accent: 45 90% 70%;
-    --accent-foreground: 25 25% 25%;
+    /* Bright amber accent */
+    --accent: 43 100% 70%;
+    --accent-foreground: 25 90% 25%;
 
-    /* Clear destructive color */
-    --destructive: 0 75% 58%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
 
-    --border: 30 25% 88%;
-    --input: 30 25% 88%;
-    --ring: 15 80% 65%;
+    --border: 25 50% 90%;
+    --input: 25 50% 90%;
+    --ring: 25 95% 53%;
 
-    /* Large radius for senior-friendly UI */
+    /* Large radius for friendly UI */
     --radius: 1rem;
     
     /* Custom semantic colors for senior app */
@@ -51,19 +50,12 @@ All colors MUST be HSL.
     --senior-sick: 280 50% 50%;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
