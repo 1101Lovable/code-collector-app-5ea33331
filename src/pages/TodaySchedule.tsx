@@ -104,7 +104,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       if (!user?.user_metadata?.location_district) return;
 
       const district = user.user_metadata.location_district;
-      
+
       try {
         // Fetch cultural events for the user's district
         const { data: events, error } = await supabase
@@ -118,13 +118,13 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
         if (error) throw error;
 
         if (events && events.length > 0) {
-          const formattedEvents = events.map(event => ({
+          const formattedEvents = events.map((event) => ({
             id: event.id,
             type: "event",
             title: event.title,
             location: event.place || district,
             image: getEventIcon(event.event_type),
-            data: event
+            data: event,
           }));
           setRecommendations(formattedEvents);
         } else {
@@ -196,7 +196,12 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       {/* Weather and Date Section */}
       <div className="w-full max-w-2xl bg-card/90 backdrop-blur-sm rounded-3xl shadow-lg border border-border/50 p-5 mt-6">
         <div className="flex justify-between items-center text-muted-foreground mb-3">
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm h-auto p-0 hover:text-primary transition-colors">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-senior-sm h-auto p-0 hover:text-primary transition-colors"
+          >
             <LogOut size={18} />
             <span className="ml-2">로그아웃</span>
           </Button>
@@ -207,9 +212,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               ) : (
                 <CloudRain className="text-blue-500" size={24} />
               )}
-              <span className="text-primary font-semibold text-senior-lg">
-                {weather.temperature}°C
-              </span>
+              <span className="text-primary font-semibold text-senior-lg">{weather.temperature}°C</span>
             </div>
           )}
         </div>
@@ -217,9 +220,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
         </h1>
         {user?.user_metadata?.location_district && (
-          <p className="text-senior-base text-foreground mt-2">
-            서울특별시 {user.user_metadata.location_district}
-          </p>
+          <p className="text-senior-base text-foreground mt-2">서울특별시 {user.user_metadata.location_district}</p>
         )}
       </div>
 
@@ -263,9 +264,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       <section className="w-full max-w-2xl mt-8 pb-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
-          <h2 className="text-senior-xl font-bold">
-            ✨ 오늘 뭐 할까요?
-          </h2>
+          <h2 className="text-senior-xl font-bold">오늘 뭐 할까요?</h2>
         </div>
 
         {recommendations.length === 0 ? (
@@ -280,13 +279,11 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
                 onClick={() => {
                   if (rec.data?.detail_url) {
-                    window.open(rec.data.detail_url, '_blank');
+                    window.open(rec.data.detail_url, "_blank");
                   }
                 }}
               >
-                <div className="text-3xl flex-shrink-0">
-                  {rec.image}
-                </div>
+                <div className="text-3xl flex-shrink-0">{rec.image}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-senior-lg font-semibold text-foreground truncate">{rec.title}</p>
                   <p className="text-senior-sm text-muted-foreground flex items-center gap-1">
