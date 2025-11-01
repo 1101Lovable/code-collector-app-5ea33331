@@ -163,6 +163,88 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
         shared_with_family: !!shareWithFamily,
       };
 
+      // Check for schedule conflicts
+      const newStart = new Date(startTime);
+      const newEnd = new Date(endTimeValue);
+
+      // 1. Check user's own schedules
+      const { data: userSchedules, error: userSchedulesError } = await supabase
+        .from("schedules")
+        .select("id, title, start_time, end_time")
+        .eq("user_id", user.id)
+        .eq("schedule_date", date);
+
+      if (userSchedulesError) throw userSchedulesError;
+
+      // Filter out current schedule if editing
+      const conflictingUserSchedules = (userSchedules || [])
+        .filter((s) => !isEditing || s.id !== scheduleToEdit.id)
+        .filter((s) => {
+          const existingStart = new Date(s.start_time);
+          const existingEnd = new Date(s.end_time);
+          return newStart < existingEnd && newEnd > existingStart;
+        });
+
+      if (conflictingUserSchedules.length > 0) {
+        toast.error("이미 등록된 일정과 시간이 겹쳐요", {
+          description: `겹치는 일정: ${conflictingUserSchedules[0].title}`,
+          duration: 4000,
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // 2. Check family shared schedules
+      // Get user's family groups
+      const { data: userFamilyGroups, error: familyGroupsError } = await supabase
+        .from("family_members")
+        .select("family_group_id")
+        .eq("user_id", user.id);
+
+      if (familyGroupsError) throw familyGroupsError;
+
+      if (userFamilyGroups && userFamilyGroups.length > 0) {
+        const familyGroupIds = userFamilyGroups.map((m) => m.family_group_id);
+
+        // Get all family members from these groups (excluding current user)
+        const { data: familyMembers, error: familyMembersError } = await supabase
+          .from("family_members")
+          .select("user_id")
+          .in("family_group_id", familyGroupIds)
+          .neq("user_id", user.id);
+
+        if (familyMembersError) throw familyMembersError;
+
+        if (familyMembers && familyMembers.length > 0) {
+          const familyUserIds = familyMembers.map((m) => m.user_id);
+
+          // Get family schedules that are shared
+          const { data: familySchedules, error: familySchedulesError } = await supabase
+            .from("schedules")
+            .select("id, title, start_time, end_time, user_id")
+            .in("user_id", familyUserIds)
+            .eq("schedule_date", date)
+            .not("family_id", "is", null);
+
+          if (familySchedulesError) throw familySchedulesError;
+
+          const conflictingFamilySchedules = (familySchedules || []).filter((s) => {
+            const existingStart = new Date(s.start_time);
+            const existingEnd = new Date(s.end_time);
+            return newStart < existingEnd && newEnd > existingStart;
+          });
+
+          if (conflictingFamilySchedules.length > 0) {
+            toast.error("가족 일정과 시간이 겹쳐요", {
+              description: `겹치는 일정: ${conflictingFamilySchedules[0].title}`,
+              duration: 4000,
+            });
+            setIsSaving(false);
+            return;
+          }
+        }
+      }
+
       let scheduleId;
       if (isEditing) {
         const { error } = await supabase.from("schedules").update(scheduleData).eq("id", scheduleToEdit.id);
