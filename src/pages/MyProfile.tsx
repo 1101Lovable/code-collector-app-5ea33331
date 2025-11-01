@@ -301,7 +301,7 @@ export default function MyProfile() {
           onClick={() => setDeleteDialogOpen(true)}
           variant="ghost"
           size="lg"
-          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="w-full text-primary/80 hover:text-primary hover:bg-primary/10"
         >
           <UserX className="mr-2" />
           회원 탈퇴
