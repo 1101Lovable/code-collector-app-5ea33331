@@ -206,25 +206,24 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
       if (userFamilyGroups && userFamilyGroups.length > 0) {
         const familyGroupIds = userFamilyGroups.map((m) => m.family_group_id);
 
-        // Get all family members from these groups (excluding current user)
-        const { data: familyMembers, error: familyMembersError } = await supabase
-          .from("family_members")
-          .select("user_id")
-          .in("family_group_id", familyGroupIds)
-          .neq("user_id", user.id);
+        // Get all shared schedule IDs for these family groups
+        const { data: sharedSchedules, error: sharedSchedulesError } = await supabase
+          .from("schedule_family_shares")
+          .select("schedule_id")
+          .in("family_group_id", familyGroupIds);
 
-        if (familyMembersError) throw familyMembersError;
+        if (sharedSchedulesError) throw sharedSchedulesError;
 
-        if (familyMembers && familyMembers.length > 0) {
-          const familyUserIds = familyMembers.map((m) => m.user_id);
+        if (sharedSchedules && sharedSchedules.length > 0) {
+          const sharedScheduleIds = sharedSchedules.map((s) => s.schedule_id);
 
-          // Get family schedules that are shared
+          // Get the actual schedule details on the same date
           const { data: familySchedules, error: familySchedulesError } = await supabase
             .from("schedules")
             .select("id, title, start_time, end_time, user_id")
-            .in("user_id", familyUserIds)
+            .in("id", sharedScheduleIds)
             .eq("schedule_date", date)
-            .not("family_id", "is", null);
+            .neq("user_id", user.id); // Exclude user's own schedules
 
           if (familySchedulesError) throw familySchedulesError;
 
