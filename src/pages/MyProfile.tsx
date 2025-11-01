@@ -225,7 +225,7 @@ export default function MyProfile() {
           onClick={signOut}
           variant="ghost"
           size="lg"
-          className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+          className="w-full text-primary hover:text-primary hover:bg-primary/10"
         >
           <LogOut className="mr-2" />
           로그아웃

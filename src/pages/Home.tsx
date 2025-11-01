@@ -180,7 +180,10 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
       {/* Weather and Date Section */}
       <div className="w-full max-w-2xl bg-card/90 backdrop-blur-sm rounded-3xl shadow-lg border border-border/50 p-5 mt-6">
-        <div className="flex justify-end items-center text-muted-foreground mb-3">
+        <div className="flex justify-between items-start mb-3">
+          <h1 className="text-senior-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
+          </h1>
           {weather && (
             <div className="flex items-center gap-2">
               {weather.weathercode <= 3 ? (
@@ -192,9 +195,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
             </div>
           )}
         </div>
-        <h1 className="text-senior-2xl font-extrabold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
-        </h1>
         {user?.user_metadata?.location_city && (
           <p className="text-senior-base text-foreground mt-2">
             {user.user_metadata.location_city} {user.user_metadata.location_district}
