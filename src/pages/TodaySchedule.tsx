@@ -227,7 +227,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       <section className="w-full max-w-2xl mt-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
-          <h2 className="text-senior-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+          <h2 className="text-senior-xl font-bold text-secondary-foreground flex items-center gap-2">
             <Calendar size={20} />
             오늘의 일정
           </h2>
