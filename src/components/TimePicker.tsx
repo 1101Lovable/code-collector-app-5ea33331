@@ -73,7 +73,7 @@ export default function TimePicker({ value, onChange, disabled }: TimePickerProp
         </SelectTrigger>
         <SelectContent className="bg-popover z-50">
           {hourOptions.map((h) => (
-            <SelectItem key={h} value={h} className="text-senior-xl">
+            <SelectItem key={h} value={h} className="text-xl">
               {h}
             </SelectItem>
           ))}
@@ -87,7 +87,7 @@ export default function TimePicker({ value, onChange, disabled }: TimePickerProp
         </SelectTrigger>
         <SelectContent className="bg-popover z-50">
           {minuteOptions.map((m) => (
-            <SelectItem key={m} value={m} className="text-senior-xl">
+            <SelectItem key={m} value={m} className="text-xl">
               {m}
             </SelectItem>
           ))}
