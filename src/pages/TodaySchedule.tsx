@@ -598,7 +598,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               <Input
                 id="schedule-date"
                 type="date"
-                className="h-24 text-senior-xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                className="h-24 text-senior-xl md:text-senior-xl px-4 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
                 value={addScheduleDate}
                 onChange={(e) => setAddScheduleDate(e.target.value)}
                 disabled={isEventWithFixedTime()}

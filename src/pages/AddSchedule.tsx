@@ -227,7 +227,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
           >
             <ArrowLeft size={32} />
           </Button>
-          <h1 className="text-senior-2xl">{isEditing ? "일정 수정" : "일정 추가"}</h1>
+          <h1 className="text-senior-xl">{isEditing ? "일정 수정" : "일정 추가"}</h1>
         </div>
       </header>
 
@@ -240,7 +240,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
           <Input
             id="title"
             placeholder="예: 병원 가기, 친구 만나기"
-            className="h-24 text-senior-xl px-6 border-2"
+            className="h-24 text-senior-xl md:text-senior-xl px-6 border-2"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
@@ -253,7 +253,7 @@ export default function AddSchedule({ onBack, onViewCalendar, scheduleToEdit }: 
           <Input
             id="date"
             type="date"
-            className="h-24 text-senior-xl px-6 border-2 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+            className="h-24 text-senior-xl md:text-senior-xl px-6 border-2 [&::-webkit-calendar-picker-indicator]:scale-150 [&::-webkit-calendar-picker-indicator]:cursor-pointer"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
