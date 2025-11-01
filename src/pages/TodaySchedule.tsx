@@ -235,11 +235,19 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           }
         }
 
-        // Combine and sort all schedules
         const allSchedules = [...(ownSchedules || []), ...familySchedules].sort((a, b) => {
-          if (!a.schedule_time) return 1;
-          if (!b.schedule_time) return -1;
-          return a.schedule_time.localeCompare(b.schedule_time);
+          const getTimeValue = (s: any) => {
+            if (s.schedule_time) {
+              const [h, m] = s.schedule_time.split(':');
+              return parseInt(h) * 60 + parseInt(m);
+            }
+            if (s.start_time) {
+              const d = new Date(s.start_time);
+              return d.getHours() * 60 + d.getMinutes();
+            }
+            return Number.MAX_SAFE_INTEGER;
+          };
+          return getTimeValue(a) - getTimeValue(b);
         });
 
         setSchedules(allSchedules);
@@ -296,6 +304,17 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
     return `${period} ${displayHour}:${minutes}`;
   };
 
+  const formatStartTimestamp = (ts: string | null) => {
+    if (!ts) return "";
+    const d = new Date(ts);
+    const h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, "0");
+    const period = h < 12 ? "오전" : "오후";
+    const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${period} ${displayHour}:${m}`;
+  };
+
+  const getDisplayTime = (s: any) => (s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time));
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-secondary/30 pb-24 flex flex-col items-center px-4">
       {/* Weather and Date Section */}
@@ -348,8 +367,8 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex justify-between items-center hover:shadow-md transition-all"
               >
                 <div>
-                  {schedule.schedule_time && (
-                    <p className="text-primary font-bold text-senior-lg">{formatTime(schedule.schedule_time)}</p>
+                  {(schedule.schedule_time || schedule.start_time) && (
+                    <p className="text-primary font-bold text-senior-lg">{getDisplayTime(schedule)}</p>
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>

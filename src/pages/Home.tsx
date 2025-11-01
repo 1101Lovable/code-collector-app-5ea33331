@@ -152,6 +152,17 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     return `${period} ${displayHour}:${minutes}`;
   };
 
+  const formatStartTimestamp = (ts: string | null) => {
+    if (!ts) return "";
+    const d = new Date(ts);
+    const h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, "0");
+    const period = h < 12 ? "오전" : "오후";
+    const displayHour = h === 0 ? 12 : h > 12 ? h - 12 : h;
+    return `${period} ${displayHour}:${m}`;
+  };
+
+  const getDisplayTime = (s: any) => (s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time));
   const handleMoodSelect = async (moodId: string) => {
     if (!user || isRecordingMood) return;
 
@@ -220,8 +231,8 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex justify-between items-center hover:shadow-md transition-all"
               >
                 <div>
-                  {schedule.schedule_time && (
-                    <p className="text-primary font-bold text-senior-lg">{formatTime(schedule.schedule_time)}</p>
+                  {(schedule.schedule_time || schedule.start_time) && (
+                    <p className="text-primary font-bold text-senior-lg">{getDisplayTime(schedule)}</p>
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>

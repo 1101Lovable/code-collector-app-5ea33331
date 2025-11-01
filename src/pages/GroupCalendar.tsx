@@ -222,6 +222,17 @@ export default function GroupCalendar() {
     return `${ampm} ${displayHour}:${minutes}`;
   };
 
+  const formatStartTimestamp = (ts: string | null) => {
+    if (!ts) return "";
+    const d = new Date(ts);
+    const h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, "0");
+    const ampm = h >= 12 ? "오후" : "오전";
+    const displayHour = h > 12 ? h - 12 : h === 0 ? 12 : h;
+    return `${ampm} ${displayHour}:${m}`;
+  };
+
+  const getDisplayTime = (s: any) => (s?.schedule_time ? formatTime(s.schedule_time) : formatStartTimestamp(s?.start_time));
   const getMoodEmoji = (mood: string | null) => {
     if (!mood) return null;
     const moodData = moods.find((m) => m.id === mood);
@@ -348,9 +359,9 @@ export default function GroupCalendar() {
                 <Card key={schedule.id} className="p-4">
                   <div className="flex items-start justify-between mb-2">
                     <h4 className="text-senior-base font-semibold flex-1">{schedule.title}</h4>
-                    {schedule.schedule_time && (
+                    {(schedule.schedule_time || schedule.start_time) && (
                       <span className="text-senior-sm text-muted-foreground flex-shrink-0 ml-2">
-                        {formatTime(schedule.schedule_time)}
+                        {getDisplayTime(schedule)}
                       </span>
                     )}
                   </div>
