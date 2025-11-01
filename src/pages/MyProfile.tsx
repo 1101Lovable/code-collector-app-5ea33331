@@ -10,6 +10,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { LogOut, User, MapPin, Phone, Smile, Edit2, Save } from "lucide-react";
 import { toast } from "sonner";
 
+// Format phone number for display
+const formatPhoneNumber = (phone: string) => {
+  if (!phone) return "";
+  const numbers = phone.replace(/[^0-9]/g, "");
+  if (numbers.length <= 3) return numbers;
+  if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+};
+
 interface Profile {
   display_name: string;
   phone_number: string;
@@ -181,7 +190,7 @@ export default function MyProfile() {
               
               <div className="flex items-center justify-center gap-2 text-muted-foreground">
                 <Phone size={16} />
-                <span className="text-senior-base">{profile.phone_number || "등록된 전화번호 없음"}</span>
+                <span className="text-senior-base">{formatPhoneNumber(profile.phone_number) || "등록된 전화번호 없음"}</span>
               </div>
             </div>
           </div>
