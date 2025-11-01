@@ -463,7 +463,7 @@ export default function GroupCalendar() {
 
         {myGroups.length === 0 ? (
           <Card className="p-8 text-center">
-            <p className="text-senior-base text-muted-foreground mb-4">아직 가족 그룹이 없어요</p>
+            <p className="text-senior-base text-muted-foreground mb-4">아직 그룹이 없어요</p>
             <Button onClick={() => setShowManagement(true)} className="gap-2">
               <Users size={20} />
               그룹 만들기
