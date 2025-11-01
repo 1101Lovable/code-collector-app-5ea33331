@@ -297,6 +297,42 @@ export type Database = {
         }
         Relationships: []
       }
+      schedule_family_shares: {
+        Row: {
+          created_at: string | null
+          family_group_id: string
+          id: string
+          schedule_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          family_group_id: string
+          id?: string
+          schedule_id: string
+        }
+        Update: {
+          created_at?: string | null
+          family_group_id?: string
+          id?: string
+          schedule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "schedule_family_shares_family_group_id_fkey"
+            columns: ["family_group_id"]
+            isOneToOne: false
+            referencedRelation: "family_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "schedule_family_shares_schedule_id_fkey"
+            columns: ["schedule_id"]
+            isOneToOne: false
+            referencedRelation: "schedules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       schedules: {
         Row: {
           created_at: string | null
