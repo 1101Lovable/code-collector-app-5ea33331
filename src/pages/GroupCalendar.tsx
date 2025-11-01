@@ -113,12 +113,11 @@ export default function GroupCalendar() {
     if (!user || !selectedGroup) return;
 
     try {
-      // Get all members of the selected group
+      // Get all members of the selected group (including current user)
       const { data: members, error: membersError } = await supabase
         .from("family_members")
         .select("user_id")
-        .eq("family_group_id", selectedGroup.id)
-        .neq("user_id", user.id);
+        .eq("family_group_id", selectedGroup.id);
 
       if (membersError) throw membersError;
 
