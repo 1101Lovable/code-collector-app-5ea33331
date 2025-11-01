@@ -15,10 +15,10 @@ Deno.serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Fetch the JSON file
-    const jsonUrl = `${supabaseUrl.replace('.supabase.co', '')}/data/seoul-cultural-events.json`;
-    const response = await fetch(jsonUrl);
-    const data = await response.json();
+    // Read the JSON file from public folder
+    const fileUrl = new URL('../../../public/data/seoul-cultural-events.json', import.meta.url);
+    const fileContent = await Deno.readTextFile(fileUrl);
+    const data = JSON.parse(fileContent);
 
     const events = data.DATA;
     const batchSize = 100;
