@@ -105,7 +105,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       if (!user?.user_metadata?.location_district) return;
 
       const district = user.user_metadata.location_district;
-      
+
       try {
         // Fetch cultural events for the user's district
         const { data: events, error } = await supabase
@@ -119,13 +119,13 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
         if (error) throw error;
 
         if (events && events.length > 0) {
-          const formattedEvents = events.map(event => ({
+          const formattedEvents = events.map((event) => ({
             id: event.id,
             type: "event",
             title: event.title,
             location: event.place || district,
             image: getEventIcon(event.event_type),
-            data: event
+            data: event,
           }));
           setRecommendations(formattedEvents);
         } else {
@@ -173,8 +173,8 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       if (!user) return;
 
       try {
-        const today = new Date().toISOString().split('T')[0];
-        
+        const today = new Date().toISOString().split("T")[0];
+
         // Get user's own schedules
         const { data: ownSchedules, error: ownError } = await supabase
           .from("schedules")
@@ -192,10 +192,10 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           .eq("user_id", user.id);
 
         let familySchedules: any[] = [];
-        
+
         if (memberships && memberships.length > 0) {
           const groupIds = memberships.map((m) => m.family_group_id);
-          
+
           // Get family members' user IDs
           const { data: familyMembers } = await supabase
             .from("family_members")
@@ -204,14 +204,14 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
             .neq("user_id", user.id);
 
           if (familyMembers && familyMembers.length > 0) {
-            const familyUserIds = familyMembers.map(m => m.user_id);
-            
+            const familyUserIds = familyMembers.map((m) => m.user_id);
+
             // Get family members' display names
             const { data: familyProfiles } = await supabase
               .from("profiles")
               .select("id, display_name")
               .in("id", familyUserIds);
-            
+
             // Get shared schedules from family members
             const scheduleQuery3 = supabase
               .from("schedules")
@@ -220,16 +220,16 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               .eq("schedule_date", today)
               .not("family_id", "is", null)
               .order("start_time", { ascending: true });
-            
+
             const result3: any = await scheduleQuery3;
             const sharedSchedules = result3.data;
 
             // Add display names to family schedules
-            familySchedules = (sharedSchedules || []).map(schedule => {
-              const memberProfile = familyProfiles?.find(p => p.id === schedule.user_id);
+            familySchedules = (sharedSchedules || []).map((schedule) => {
+              const memberProfile = familyProfiles?.find((p) => p.id === schedule.user_id);
               return {
                 ...schedule,
-                owner_name: memberProfile?.display_name || "가족"
+                owner_name: memberProfile?.display_name || "그룹",
               };
             });
           }
@@ -254,18 +254,18 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
 
     // Realtime subscription for schedule updates
     const channel = supabase
-      .channel('schedule-changes')
+      .channel("schedule-changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'schedules',
-          filter: `user_id=eq.${user?.id}`
+          event: "*",
+          schema: "public",
+          table: "schedules",
+          filter: `user_id=eq.${user?.id}`,
         },
         () => {
           fetchSchedules();
-        }
+        },
       )
       .subscribe();
 
@@ -289,7 +289,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
 
   const formatTime = (time: string | null) => {
     if (!time) return "";
-    const [hours, minutes] = time.split(':');
+    const [hours, minutes] = time.split(":");
     const hour = parseInt(hours);
     const period = hour < 12 ? "오전" : "오후";
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -301,7 +301,12 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       {/* Weather and Date Section */}
       <div className="w-full max-w-2xl bg-card/90 backdrop-blur-sm rounded-3xl shadow-lg border border-border/50 p-5 mt-6">
         <div className="flex justify-between items-center text-muted-foreground mb-3">
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm h-auto p-0 hover:text-primary transition-colors">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-senior-sm h-auto p-0 hover:text-primary transition-colors"
+          >
             <LogOut size={18} />
             <span className="ml-2">로그아웃</span>
           </Button>
@@ -312,9 +317,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               ) : (
                 <CloudRain className="text-blue-500" size={24} />
               )}
-              <span className="text-primary font-semibold text-senior-lg">
-                {weather.temperature}°C
-              </span>
+              <span className="text-primary font-semibold text-senior-lg">{weather.temperature}°C</span>
             </div>
           )}
         </div>
@@ -322,9 +325,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
           {today.getMonth() + 1}월 {today.getDate()}일 {["일", "월", "화", "수", "목", "금", "토"][today.getDay()]}요일
         </h1>
         {user?.user_metadata?.location_district && (
-          <p className="text-senior-base text-foreground mt-2">
-            서울특별시 {user.user_metadata.location_district}
-          </p>
+          <p className="text-senior-base text-foreground mt-2">서울특별시 {user.user_metadata.location_district}</p>
         )}
       </div>
 
@@ -332,9 +333,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       <section className="w-full max-w-2xl mt-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            오늘의 일정
-          </h2>
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">오늘의 일정</h2>
         </div>
 
         {schedules.length === 0 ? (
@@ -350,9 +349,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
               >
                 <div>
                   {schedule.schedule_time && (
-                    <p className="text-primary font-bold text-senior-lg">
-                      {formatTime(schedule.schedule_time)}
-                    </p>
+                    <p className="text-primary font-bold text-senior-lg">{formatTime(schedule.schedule_time)}</p>
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
@@ -371,9 +368,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
       <section className="w-full max-w-2xl mt-8 pb-6">
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            오늘 뭐 할까요?
-          </h2>
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">오늘 뭐 할까요?</h2>
         </div>
 
         {recommendations.length === 0 ? (
@@ -388,13 +383,11 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
                 onClick={() => {
                   if (rec.data?.detail_url) {
-                    window.open(rec.data.detail_url, '_blank');
+                    window.open(rec.data.detail_url, "_blank");
                   }
                 }}
               >
-                <div className="text-3xl flex-shrink-0">
-                  {rec.image}
-                </div>
+                <div className="text-3xl flex-shrink-0">{rec.image}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-senior-lg font-semibold text-foreground truncate">{rec.title}</p>
                   <p className="text-senior-sm text-muted-foreground flex items-center gap-1">

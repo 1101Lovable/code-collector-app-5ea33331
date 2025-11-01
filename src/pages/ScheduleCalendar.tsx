@@ -30,7 +30,7 @@ export default function ScheduleCalendar() {
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
+
     return { firstDay, daysInMonth };
   };
 
@@ -53,8 +53,8 @@ export default function ScheduleCalendar() {
     try {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth() + 1;
-      const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-      const endDate = `${year}-${String(month).padStart(2, '0')}-${daysInMonth}`;
+      const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+      const endDate = `${year}-${String(month).padStart(2, "0")}-${daysInMonth}`;
 
       // Get user's own schedules
       const { data: ownSchedules, error: ownError } = await supabase
@@ -73,10 +73,10 @@ export default function ScheduleCalendar() {
         .eq("user_id", user.id);
 
       let familySchedules: any[] = [];
-      
+
       if (memberships && memberships.length > 0) {
         const groupIds = memberships.map((m) => m.family_group_id);
-        
+
         // Get family members' user IDs
         const { data: familyMembers } = await supabase
           .from("family_members")
@@ -85,14 +85,14 @@ export default function ScheduleCalendar() {
           .neq("user_id", user.id);
 
         if (familyMembers && familyMembers.length > 0) {
-          const familyUserIds = familyMembers.map(m => m.user_id);
-          
+          const familyUserIds = familyMembers.map((m) => m.user_id);
+
           // Get family members' display names
           const { data: familyProfiles } = await supabase
             .from("profiles")
             .select("id, display_name")
             .in("id", familyUserIds);
-          
+
           // Get shared schedules from family members
           const scheduleQuery = supabase
             .from("schedules")
@@ -101,16 +101,16 @@ export default function ScheduleCalendar() {
             .not("family_id", "is", null)
             .gte("schedule_date", startDate)
             .lte("schedule_date", endDate);
-          
+
           const result: any = await scheduleQuery;
           const sharedSchedules = result.data;
 
           // Add display names to family schedules
-          familySchedules = (sharedSchedules || []).map(schedule => {
-            const memberProfile = familyProfiles?.find(p => p.id === schedule.user_id);
+          familySchedules = (sharedSchedules || []).map((schedule) => {
+            const memberProfile = familyProfiles?.find((p) => p.id === schedule.user_id);
             return {
               ...schedule,
-              owner_name: memberProfile?.display_name || "가족"
+              owner_name: memberProfile?.display_name || "그룹",
             };
           });
         }
@@ -138,8 +138,8 @@ export default function ScheduleCalendar() {
     if (!user) return;
 
     try {
-      const dateStr = selectedDate.toISOString().split('T')[0];
-      
+      const dateStr = selectedDate.toISOString().split("T")[0];
+
       // Get user's own schedules
       const { data: ownSchedules, error: ownError } = await supabase
         .from("schedules")
@@ -157,10 +157,10 @@ export default function ScheduleCalendar() {
         .eq("user_id", user.id);
 
       let familySchedules: any[] = [];
-      
+
       if (memberships && memberships.length > 0) {
         const groupIds = memberships.map((m) => m.family_group_id);
-        
+
         // Get family members' user IDs
         const { data: familyMembers } = await supabase
           .from("family_members")
@@ -169,14 +169,14 @@ export default function ScheduleCalendar() {
           .neq("user_id", user.id);
 
         if (familyMembers && familyMembers.length > 0) {
-          const familyUserIds = familyMembers.map(m => m.user_id);
-          
+          const familyUserIds = familyMembers.map((m) => m.user_id);
+
           // Get family members' display names
           const { data: familyProfiles } = await supabase
             .from("profiles")
             .select("id, display_name")
             .in("id", familyUserIds);
-          
+
           // Get shared schedules from family members
           const scheduleQuery2 = supabase
             .from("schedules")
@@ -185,16 +185,16 @@ export default function ScheduleCalendar() {
             .eq("schedule_date", dateStr)
             .not("family_id", "is", null)
             .order("start_time", { ascending: true });
-          
+
           const result2: any = await scheduleQuery2;
           const sharedSchedules = result2.data;
 
           // Add display names to family schedules
-          familySchedules = (sharedSchedules || []).map(schedule => {
-            const memberProfile = familyProfiles?.find(p => p.id === schedule.user_id);
+          familySchedules = (sharedSchedules || []).map((schedule) => {
+            const memberProfile = familyProfiles?.find((p) => p.id === schedule.user_id);
             return {
               ...schedule,
-              owner_name: memberProfile?.display_name || "가족"
+              owner_name: memberProfile?.display_name || "그룹",
             };
           });
         }
@@ -217,7 +217,7 @@ export default function ScheduleCalendar() {
     if (!user?.user_metadata?.location_district) return;
 
     const district = user.user_metadata.location_district;
-    
+
     try {
       const { data: events, error } = await supabase
         .from("cultural_events")
@@ -230,13 +230,13 @@ export default function ScheduleCalendar() {
       if (error) throw error;
 
       if (events && events.length > 0) {
-        const formattedEvents = events.map(event => ({
+        const formattedEvents = events.map((event) => ({
           id: event.id,
           type: "event",
           title: event.title,
           location: event.place || district,
           image: getEventIcon(event.event_type),
-          data: event
+          data: event,
         }));
         setRecommendations(formattedEvents);
       }
@@ -247,10 +247,7 @@ export default function ScheduleCalendar() {
 
   const handleDeleteSchedule = async (scheduleId: string) => {
     try {
-      const { error } = await supabase
-        .from("schedules")
-        .delete()
-        .eq("id", scheduleId);
+      const { error } = await supabase.from("schedules").delete().eq("id", scheduleId);
 
       if (error) throw error;
 
@@ -273,7 +270,7 @@ export default function ScheduleCalendar() {
 
   const formatTime = (time: string | null) => {
     if (!time) return "";
-    const [hours, minutes] = time.split(':');
+    const [hours, minutes] = time.split(":");
     const hour = parseInt(hours);
     const period = hour < 12 ? "오전" : "오후";
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -285,23 +282,15 @@ export default function ScheduleCalendar() {
       {/* Month Navigator */}
       <div className="pt-8 pb-4 max-w-2xl mx-auto w-full">
         <div className="flex items-center justify-between">
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={prevMonth}
-          >
+          <Button size="icon" variant="outline" onClick={prevMonth}>
             <ChevronLeft size={32} />
           </Button>
-          
+
           <h2 className="text-senior-xl font-bold">
             {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
           </h2>
-          
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={nextMonth}
-          >
+
+          <Button size="icon" variant="outline" onClick={nextMonth}>
             <ChevronRight size={32} />
           </Button>
         </div>
@@ -329,14 +318,14 @@ export default function ScheduleCalendar() {
             {emptyDays.map((_, index) => (
               <div key={`empty-${index}`} className="aspect-square" />
             ))}
-            
+
             {days.map((day) => {
               const hasSchedule = monthSchedules[day] && monthSchedules[day].length > 0;
-              const isToday = 
+              const isToday =
                 day === new Date().getDate() &&
                 currentDate.getMonth() === new Date().getMonth() &&
                 currentDate.getFullYear() === new Date().getFullYear();
-              const isSelected = 
+              const isSelected =
                 day === selectedDate.getDate() &&
                 currentDate.getMonth() === selectedDate.getMonth() &&
                 currentDate.getFullYear() === selectedDate.getFullYear();
@@ -349,15 +338,13 @@ export default function ScheduleCalendar() {
                     isSelected
                       ? "bg-primary border-primary text-primary-foreground font-bold"
                       : isToday
-                      ? "bg-accent border-accent text-accent-foreground font-bold"
-                      : "border-border hover:border-primary"
+                        ? "bg-accent border-accent text-accent-foreground font-bold"
+                        : "border-border hover:border-primary"
                   }`}
                 >
                   <span className="text-senior-sm mb-1">{day}</span>
-                  
-                  {hasSchedule && (
-                    <div className="w-2 h-2 rounded-full bg-primary" />
-                  )}
+
+                  {hasSchedule && <div className="w-2 h-2 rounded-full bg-primary" />}
                 </div>
               );
             })}
@@ -386,9 +373,7 @@ export default function ScheduleCalendar() {
               >
                 <div className="flex-1">
                   {schedule.schedule_time && (
-                    <p className="text-primary font-bold text-senior-lg">
-                      {formatTime(schedule.schedule_time)}
-                    </p>
+                    <p className="text-primary font-bold text-senior-lg">{formatTime(schedule.schedule_time)}</p>
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                   {schedule.family_id && schedule.user_id !== user?.id && (
@@ -416,9 +401,7 @@ export default function ScheduleCalendar() {
       {/* Recommendations */}
       <section className="max-w-2xl mx-auto w-full pb-6">
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            오늘 뭐 할까요?
-          </h2>
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">오늘 뭐 할까요?</h2>
         </div>
 
         {recommendations.length === 0 ? (
@@ -433,13 +416,11 @@ export default function ScheduleCalendar() {
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all"
                 onClick={() => {
                   if (rec.data?.detail_url) {
-                    window.open(rec.data.detail_url, '_blank');
+                    window.open(rec.data.detail_url, "_blank");
                   }
                 }}
               >
-                <div className="text-3xl flex-shrink-0">
-                  {rec.image}
-                </div>
+                <div className="text-3xl flex-shrink-0">{rec.image}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-senior-lg font-semibold text-foreground truncate">{rec.title}</p>
                   <p className="text-senior-sm text-muted-foreground flex items-center gap-1">

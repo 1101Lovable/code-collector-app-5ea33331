@@ -15,7 +15,7 @@ export default function CalendarView({ onBack }: CalendarViewProps) {
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-    
+
     return { firstDay, daysInMonth };
   };
 
@@ -59,23 +59,15 @@ export default function CalendarView({ onBack }: CalendarViewProps) {
       {/* Month Navigator */}
       <div className="px-6 pt-8 pb-4">
         <div className="flex items-center justify-between">
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={prevMonth}
-          >
+          <Button size="icon" variant="outline" onClick={prevMonth}>
             <ChevronLeft size={32} />
           </Button>
-          
+
           <h2 className="text-senior-xl">
             {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월
           </h2>
-          
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={nextMonth}
-          >
+
+          <Button size="icon" variant="outline" onClick={nextMonth}>
             <ChevronRight size={32} />
           </Button>
         </div>
@@ -103,10 +95,10 @@ export default function CalendarView({ onBack }: CalendarViewProps) {
             {emptyDays.map((_, index) => (
               <div key={`empty-${index}`} className="aspect-square" />
             ))}
-            
+
             {days.map((day) => {
               const schedule = schedules[day];
-              const isToday = 
+              const isToday =
                 day === new Date().getDate() &&
                 currentDate.getMonth() === new Date().getMonth() &&
                 currentDate.getFullYear() === new Date().getFullYear();
@@ -121,15 +113,11 @@ export default function CalendarView({ onBack }: CalendarViewProps) {
                   }`}
                 >
                   <span className="text-senior-sm mb-1">{day}</span>
-                  
+
                   {schedule && (
                     <div className="flex gap-1">
-                      {schedule.personal && (
-                        <div className="w-2 h-2 rounded-full bg-primary" />
-                      )}
-                      {schedule.family && (
-                        <div className="w-2 h-2 rounded-full bg-accent" />
-                      )}
+                      {schedule.personal && <div className="w-2 h-2 rounded-full bg-primary" />}
+                      {schedule.family && <div className="w-2 h-2 rounded-full bg-accent" />}
                     </div>
                   )}
                 </div>
@@ -146,7 +134,7 @@ export default function CalendarView({ onBack }: CalendarViewProps) {
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 rounded-full bg-accent" />
-            <span className="text-senior-base">가족 일정</span>
+            <span className="text-senior-base">그룹 일정</span>
           </div>
         </div>
       </div>

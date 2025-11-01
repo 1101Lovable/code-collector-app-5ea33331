@@ -97,7 +97,7 @@ export default function FamilyNews() {
         setFamilyMembers(familyData);
       } catch (error: any) {
         console.error("Error fetching family members:", error);
-        toast.error("가족 정보를 불러오는데 실패했습니다");
+        toast.error("그룹 정보를 불러오는데 실패했습니다");
       } finally {
         setLoading(false);
       }
@@ -120,7 +120,7 @@ export default function FamilyNews() {
       setSelectedMood(moodId);
       const mood = moods.find((m) => m.id === moodId);
       toast.success(`${mood?.emoji} ${mood?.label}을(를) 선택하셨어요`, {
-        description: "가족들에게 알려드릴게요",
+        description: "그룹들에게 알려드릴게요",
         duration: 3000,
       });
 
@@ -169,7 +169,7 @@ export default function FamilyNews() {
         <div className="flex items-center gap-2 mb-4">
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
           <h2 className="text-senior-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            우리 가족 소식
+            우리 그룹 소식
           </h2>
         </div>
 
@@ -180,7 +180,7 @@ export default function FamilyNews() {
         ) : familyMembers.length === 0 ? (
           <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50 shadow-sm">
             <p className="text-senior-base text-muted-foreground mb-2">아직 그룹이 없어요</p>
-            <p className="text-senior-sm text-muted-foreground">설정에서 가족을 초대해보세요</p>
+            <p className="text-senior-sm text-muted-foreground">설정에서 그룹을 초대해보세요</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -235,7 +235,7 @@ export default function FamilyNews() {
           <div className="w-1 h-6 bg-gradient-to-b from-primary to-accent rounded-full" />
           <h1 className="text-senior-2xl font-bold">오늘 기분은 어떠세요?</h1>
         </div>
-        <p className="text-senior-sm text-muted-foreground mb-6">선택하신 기분은 가족들에게 알려져요</p>
+        <p className="text-senior-sm text-muted-foreground mb-6">선택하신 기분은 그룹들에게 알려져요</p>
 
         <div className="grid grid-cols-2 gap-3">
           {moods.map((mood) => (
@@ -297,7 +297,7 @@ export default function FamilyNews() {
         </div>
 
         <div className="mt-6 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
-          <p className="text-senior-sm text-center">💚 건강 정보는 가족과 자동으로 공유돼요</p>
+          <p className="text-senior-sm text-center">💚 건강 정보는 그룹과 자동으로 공유돼요</p>
         </div>
       </section>
     </div>

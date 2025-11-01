@@ -83,7 +83,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
       if (!user) return;
 
       try {
-        const today = new Date().toISOString().split('T')[0];
+        const today = new Date().toISOString().split("T")[0];
         const { data, error } = await supabase
           .from("schedules")
           .select("*")
@@ -123,18 +123,18 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
     fetchCurrentMood();
 
     const channel = supabase
-      .channel('schedule-changes')
+      .channel("schedule-changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'schedules',
-          filter: `user_id=eq.${user?.id}`
+          event: "*",
+          schema: "public",
+          table: "schedules",
+          filter: `user_id=eq.${user?.id}`,
         },
         () => {
           fetchSchedules();
-        }
+        },
       )
       .subscribe();
 
@@ -157,7 +157,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
 
   const formatTime = (time: string | null) => {
     if (!time) return "";
-    const [hours, minutes] = time.split(':');
+    const [hours, minutes] = time.split(":");
     const hour = parseInt(hours);
     const period = hour < 12 ? "오전" : "오후";
     const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
@@ -169,13 +169,11 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
 
     setIsRecordingMood(true);
     try {
-      const { error } = await supabase
-        .from("mood_records")
-        .insert({
-          user_id: user.id,
-          mood: moodId,
-          recorded_at: new Date().toISOString(),
-        });
+      const { error } = await supabase.from("mood_records").insert({
+        user_id: user.id,
+        mood: moodId,
+        recorded_at: new Date().toISOString(),
+      });
 
       if (error) throw error;
 
@@ -195,7 +193,12 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
       {/* Weather and Date Section */}
       <div className="w-full max-w-2xl bg-card/90 backdrop-blur-sm rounded-3xl shadow-lg border border-border/50 p-5 mt-6">
         <div className="flex justify-between items-center text-muted-foreground mb-3">
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-senior-sm h-auto p-0 hover:text-primary transition-colors">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="text-senior-sm h-auto p-0 hover:text-primary transition-colors"
+          >
             <LogOut size={18} />
             <span className="ml-2">로그아웃</span>
           </Button>
@@ -206,9 +209,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
               ) : (
                 <CloudRain className="text-blue-500" size={24} />
               )}
-              <span className="text-primary font-semibold text-senior-lg">
-                {weather.temperature}°C
-              </span>
+              <span className="text-primary font-semibold text-senior-lg">{weather.temperature}°C</span>
             </div>
           )}
         </div>
@@ -225,9 +226,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
       {/* Today's Schedule */}
       <section className="w-full max-w-2xl mt-6">
         <div className="flex items-center gap-2 mb-4">
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            오늘의 일정
-          </h2>
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">오늘의 일정</h2>
         </div>
 
         {schedules.length === 0 ? (
@@ -241,17 +240,15 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
                 key={schedule.id}
                 className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex justify-between items-center hover:shadow-md transition-all"
               >
-              <div>
+                <div>
                   {schedule.schedule_time && (
-                    <p className="text-primary font-bold text-senior-lg">
-                      {formatTime(schedule.schedule_time)}
-                    </p>
+                    <p className="text-primary font-bold text-senior-lg">{formatTime(schedule.schedule_time)}</p>
                   )}
                   <p className="text-foreground text-senior-base mt-1">{schedule.title}</p>
                 </div>
                 {schedule.family_id && schedule.user_id !== user?.id && (
                   <div className="flex items-center gap-1 bg-secondary px-3 py-1 rounded-full text-senior-sm text-foreground flex-shrink-0 ml-4">
-                    <Users size={14} /> 가족
+                    <Users size={14} /> 그룹
                   </div>
                 )}
               </div>
@@ -262,45 +259,31 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
 
       {/* Mood Recording Section - Moved to Bottom */}
       <section className="w-full max-w-2xl mt-6">
-        <div 
+        <div
           className="flex items-center gap-2 mb-4 cursor-pointer"
           onClick={() => currentMood && setIsMoodSectionCollapsed(!isMoodSectionCollapsed)}
         >
-          <h2 className="text-senior-xl font-bold text-secondary-foreground">
-            오늘의 기분
-          </h2>
+          <h2 className="text-senior-xl font-bold text-secondary-foreground">오늘의 기분</h2>
         </div>
 
         {isMoodSectionCollapsed && currentMood ? (
-          <div 
+          <div
             className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center justify-between cursor-pointer hover:shadow-md transition-all"
             onClick={() => setIsMoodSectionCollapsed(false)}
           >
             <div className="flex items-center gap-3">
-              <div className="text-4xl">
-                {moods.find((m) => m.id === currentMood)?.emoji}
-              </div>
-              <p className="text-senior-lg font-semibold">
-                {moods.find((m) => m.id === currentMood)?.label}
-              </p>
+              <div className="text-4xl">{moods.find((m) => m.id === currentMood)?.emoji}</div>
+              <p className="text-senior-lg font-semibold">{moods.find((m) => m.id === currentMood)?.label}</p>
             </div>
-            <p className="text-senior-sm text-muted-foreground">
-              클릭하여 수정
-            </p>
+            <p className="text-senior-sm text-muted-foreground">클릭하여 수정</p>
           </div>
         ) : (
           <div className="bg-card/90 backdrop-blur-sm rounded-2xl p-6 border border-border/50">
             {currentMood ? (
               <div className="text-center">
-                <div className="text-6xl mb-3">
-                  {moods.find((m) => m.id === currentMood)?.emoji}
-                </div>
-                <p className="text-senior-lg font-semibold mb-2">
-                  {moods.find((m) => m.id === currentMood)?.label}
-                </p>
-                <p className="text-senior-sm text-muted-foreground mb-4">
-                  오늘 기분이 기록되었습니다
-                </p>
+                <div className="text-6xl mb-3">{moods.find((m) => m.id === currentMood)?.emoji}</div>
+                <p className="text-senior-lg font-semibold mb-2">{moods.find((m) => m.id === currentMood)?.label}</p>
+                <p className="text-senior-sm text-muted-foreground mb-4">오늘 기분이 기록되었습니다</p>
                 <div className="grid grid-cols-3 gap-4 mt-4">
                   {moods.map((mood) => (
                     <Button
@@ -318,9 +301,7 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
               </div>
             ) : (
               <>
-                <p className="text-senior-base text-center mb-4 text-muted-foreground">
-                  오늘 기분은 어떠신가요?
-                </p>
+                <p className="text-senior-base text-center mb-4 text-muted-foreground">오늘 기분은 어떠신가요?</p>
                 <div className="grid grid-cols-3 gap-4">
                   {moods.map((mood) => (
                     <Button
@@ -340,7 +321,6 @@ export default function Home({ onAddSchedule }: { onAddSchedule: () => void }) {
           </div>
         )}
       </section>
-
 
       {/* Floating Action Button */}
       <motion.button

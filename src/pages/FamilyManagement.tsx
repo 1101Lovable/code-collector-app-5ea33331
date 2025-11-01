@@ -230,7 +230,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
             <DialogTrigger asChild>
               <Button size="xl" className="w-full">
                 <Plus size={24} />
-                가족 만들기
+                그룹 만들기
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">
@@ -245,7 +245,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
                   </Label>
                   <Input
                     id="group-name"
-                    placeholder="예: 우리 가족"
+                    placeholder="예: 우리 그룹"
                     className="h-14 text-senior-base px-4"
                     value={newGroupName}
                     onChange={(e) => setNewGroupName(e.target.value)}
@@ -267,7 +267,7 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
             <DialogTrigger asChild>
               <Button size="xl" variant="outline" className="w-full">
                 <UserPlus size={24} />
-                가족 참여
+                그룹 참여
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-md">

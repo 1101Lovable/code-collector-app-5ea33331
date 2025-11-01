@@ -209,7 +209,7 @@ export default function GroupCalendar() {
 
       setMonthSchedules(schedulesByDate);
     } catch (error) {
-      console.error("가족 일정을 가져오는데 실패했습니다:", error);
+      console.error("그룹 일정을 가져오는데 실패했습니다:", error);
     }
   };
 
@@ -368,7 +368,7 @@ export default function GroupCalendar() {
             </div>
           ) : (
             <div className="mt-4 bg-gradient-to-r from-primary/5 to-accent/5 backdrop-blur-sm rounded-2xl p-4 border border-primary/20">
-              <p className="text-senior-sm text-center">💚 가족과 공유된 일정만 표시됩니다</p>
+              <p className="text-senior-sm text-center">💚 그룹과 공유된 일정만 표시됩니다</p>
             </div>
           )}
         </div>

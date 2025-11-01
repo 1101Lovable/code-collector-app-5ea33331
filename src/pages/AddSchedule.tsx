@@ -18,7 +18,7 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
   const { user } = useAuth();
   const [shareWithFamily, setShareWithFamily] = useState(false);
   const [title, setTitle] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [time, setTime] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -34,30 +34,28 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
     }
 
     setIsSaving(true);
-    
+
     try {
       // Parse time to create proper timestamps
       const startTime = time ? `${date}T${time}:00` : `${date}T00:00:00`;
       const endTime = time ? `${date}T${time}:00` : `${date}T23:59:59`;
-      
-      const { error } = await supabase
-        .from("schedules")
-        .insert({
-          user_id: user.id,
-          title: title.trim(),
-          schedule_date: date,
-          start_time: startTime,
-          end_time: endTime,
-          family_id: shareWithFamily ? user.id : null, // Temporary: use actual family group ID
-        });
+
+      const { error } = await supabase.from("schedules").insert({
+        user_id: user.id,
+        title: title.trim(),
+        schedule_date: date,
+        start_time: startTime,
+        end_time: endTime,
+        family_id: shareWithFamily ? user.id : null, // Temporary: use actual family group ID
+      });
 
       if (error) throw error;
 
       toast.success("일정이 추가되었어요!", {
-        description: shareWithFamily ? "가족들에게도 알려드렸어요" : undefined,
+        description: shareWithFamily ? "그룹들에게도 알려드렸어요" : undefined,
         duration: 3000,
       });
-      
+
       setTimeout(() => {
         onBack();
       }, 1000);
@@ -134,41 +132,24 @@ export default function AddSchedule({ onBack, onViewCalendar }: AddScheduleProps
               <div className="flex items-center gap-3 mb-2">
                 <Share2 className="text-accent" size={32} />
                 <Label htmlFor="share" className="text-senior-lg cursor-pointer">
-                  이 일정을 가족에게 공유할까요?
+                  이 일정을 그룹에게 공유할까요?
                 </Label>
               </div>
-              <p className="text-senior-sm text-muted-foreground pl-11">
-                가족들이 일정을 함께 볼 수 있어요
-              </p>
+              <p className="text-senior-sm text-muted-foreground pl-11">그룹들이 일정을 함께 볼 수 있어요</p>
             </div>
-            <Switch
-              id="share"
-              checked={shareWithFamily}
-              onCheckedChange={setShareWithFamily}
-              className="scale-150"
-            />
+            <Switch id="share" checked={shareWithFamily} onCheckedChange={setShareWithFamily} className="scale-150" />
           </div>
         </Card>
       </div>
 
       {/* Action Buttons */}
       <div className="px-6 pb-6 space-y-4">
-        <Button
-          size="xl"
-          onClick={onViewCalendar}
-          variant="outline"
-          className="w-full"
-        >
+        <Button size="xl" onClick={onViewCalendar} variant="outline" className="w-full">
           <CalendarIcon />
           전체 캘린더 보기
         </Button>
-        
-        <Button
-          size="xl"
-          onClick={handleSave}
-          className="w-full"
-          disabled={isSaving}
-        >
+
+        <Button size="xl" onClick={handleSave} className="w-full" disabled={isSaving}>
           {isSaving ? "저장 중..." : "일정 저장하기"}
         </Button>
       </div>
