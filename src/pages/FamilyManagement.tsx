@@ -23,6 +23,7 @@ interface FamilyGroup {
   created_by: string;
   member_count: number;
   is_head: boolean;
+  invite_code: string;
 }
 
 interface FamilyManagementProps {
@@ -146,11 +147,11 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
     setIsJoining(true);
     try {
-      // Find group by name (temporary until invite_code is added)
+      // Find group by invite code
       const { data: group, error: groupError } = await supabase
         .from("family_groups")
         .select("*")
-        .eq("name", inviteCode.trim())
+        .eq("invite_code", inviteCode.trim())
         .maybeSingle();
 
       if (groupError) {
@@ -336,9 +337,21 @@ export default function FamilyManagement({ onBack }: FamilyManagementProps) {
 
                   <div className="flex items-center gap-2 bg-secondary/30 rounded-lg p-3 mb-3">
                     <div className="flex-1">
-                      <p className="text-senior-xs text-muted-foreground mb-1">그룹 멤버</p>
-                      <p className="text-senior-xl font-bold">{group.member_count}명</p>
+                      <p className="text-senior-xs text-muted-foreground mb-1">초대 코드</p>
+                      <p className="text-senior-xl font-bold font-mono">{group.invite_code}</p>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleCopyCode(group.invite_code)}
+                      className="flex-shrink-0"
+                    >
+                      {copiedCode === group.invite_code ? (
+                        <Check size={20} className="text-green-600" />
+                      ) : (
+                        <Copy size={20} />
+                      )}
+                    </Button>
                   </div>
 
                   <Button
