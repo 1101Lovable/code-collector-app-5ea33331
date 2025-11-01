@@ -86,6 +86,7 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   const { user } = useAuth();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [schedules, setSchedules] = useState<any[]>([]);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [selectedRecommendation, setSelectedRecommendation] = useState<any>(null);
   const [addScheduleDate, setAddScheduleDate] = useState(toLocalDateString(new Date()));
   const [addScheduleTime, setAddScheduleTime] = useState("");
@@ -391,7 +392,6 @@ export default function TodaySchedule({ onAddSchedule, userId }: TodaySchedulePr
   };
 
   const today = new Date();
-  const [recommendations, setRecommendations] = useState<any[]>([]);
 
   const formatTime = (time: string | null) => {
     if (!time) return "";
