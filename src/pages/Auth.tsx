@@ -81,8 +81,8 @@ export default function Auth() {
       return;
     }
 
-    if (!isLogin && (!locationCity || !locationDistrict || !locationDong)) {
-      toast.error("위치 정보를 모두 입력해주세요");
+    if (!isLogin && (!locationCity || !locationDistrict)) {
+      toast.error("시/도와 시/군/구를 선택해주세요");
       return;
     }
 
