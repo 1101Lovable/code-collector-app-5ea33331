@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight, MapPin, Trash2, Users, Edit2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Trash2, Users, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
@@ -16,17 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-const getEventIcon = (eventType: string | null): string => {
-  if (!eventType) return "🎪";
-  if (eventType.includes("음악") || eventType.includes("클래식") || eventType.includes("콘서트")) return "🎵";
-  if (eventType.includes("전시") || eventType.includes("미술")) return "🎨";
-  if (eventType.includes("연극") || eventType.includes("뮤지컬")) return "🎭";
-  if (eventType.includes("무용")) return "💃";
-  if (eventType.includes("영화")) return "🎬";
-  if (eventType.includes("교육") || eventType.includes("체험")) return "📚";
-  return "🎪";
-};
-
 interface ScheduleCalendarProps {
   onEditSchedule?: (schedule: any) => void;
 }
@@ -36,12 +25,14 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [schedules, setSchedules] = useState<any[]>([]);
-  const [recommendations, setRecommendations] = useState<any[]>([]);
   const [monthSchedules, setMonthSchedules] = useState<{ [key: string]: any[] }>({});
   const [selectedRecommendation, setSelectedRecommendation] = useState<any>(null);
   const [addScheduleDate, setAddScheduleDate] = useState(toLocalDateString(new Date()));
   const [addScheduleTime, setAddScheduleTime] = useState("");
   const [isAddingSchedule, setIsAddingSchedule] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<string | null>(null);
+  const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(false);
+  const [parsedRecommendations, setParsedRecommendations] = useState<Array<{title: string, description: string}>>([]);
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -62,7 +53,6 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
 
   useEffect(() => {
     fetchDaySchedules();
-    fetchRecommendations();
   }, [user, selectedDate]);
 
   const fetchMonthSchedules = async () => {
@@ -239,61 +229,40 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
     }
   };
 
-  const fetchRecommendations = async () => {
+  const fetchAIRecommendation = async () => {
     if (!user?.user_metadata?.location_district) return;
 
-    const district = user.user_metadata.location_district;
-
+    setIsLoadingRecommendation(true);
     try {
-      // Fetch cultural events
-      const { data: events, error: eventsError } = await supabase
-        .from("cultural_events")
-        .select("*")
-        .eq("district", district)
-        .gte("end_date", new Date().toISOString())
-        .order("start_date", { ascending: true })
-        .limit(2);
+      const { data, error } = await supabase.functions.invoke('get-activity-recommendations', {
+        body: { district: user.user_metadata.location_district }
+      });
 
-      if (eventsError) throw eventsError;
-
-      // Fetch cultural spaces
-      const { data: spaces, error: spacesError } = await supabase
-        .from("cultural_spaces")
-        .select("*")
-        .eq("district", district)
-        .limit(1);
-
-      if (spacesError) throw spacesError;
-
-      const allRecommendations = [];
-
-      if (events && events.length > 0) {
-        const formattedEvents = events.map((event) => ({
-          id: event.id,
-          type: "event",
-          title: event.title,
-          location: event.place || district,
-          image: getEventIcon(event.event_type),
-          data: event,
-        }));
-        allRecommendations.push(...formattedEvents);
+      if (error) throw error;
+      
+      setAiRecommendations(data.recommendation);
+      
+      // Parse the recommendation text to extract individual activities
+      const lines = data.recommendation.split('\n');
+      const activities: Array<{title: string, description: string}> = [];
+      
+      for (const line of lines) {
+        // Match pattern like "1. **활동명**: 설명"
+        const match = line.match(/^\d+\.\s+\*\*(.+?)\*\*:\s+(.+)$/);
+        if (match) {
+          activities.push({
+            title: match[1].trim(),
+            description: match[2].trim()
+          });
+        }
       }
-
-      if (spaces && spaces.length > 0) {
-        const formattedSpaces = spaces.map((space) => ({
-          id: space.id,
-          type: "space",
-          title: space.name,
-          location: space.address || district,
-          image: "🏛️",
-          data: space,
-        }));
-        allRecommendations.push(...formattedSpaces);
-      }
-
-      setRecommendations(allRecommendations);
-    } catch (error) {
-      console.error("추천 정보를 가져오는데 실패했습니다:", error);
+      
+      setParsedRecommendations(activities);
+    } catch (error: any) {
+      console.error('추천을 가져오는데 실패했습니다:', error);
+      toast.error('추천을 가져오는데 실패했습니다');
+    } finally {
+      setIsLoadingRecommendation(false);
     }
   };
 
@@ -321,17 +290,31 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
       const startTime = cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T00:00:00`;
       const endTime = cleanTime ? `${addScheduleDate}T${cleanTime}:00` : `${addScheduleDate}T23:59:59`;
 
-      const { error } = await supabase.from("schedules").insert({
+      const scheduleData: any = {
         user_id: user.id,
         title: selectedRecommendation.title,
-        location: selectedRecommendation.location,
         schedule_date: addScheduleDate,
         schedule_time: cleanTime,
         start_time: startTime,
         end_time: endTime,
-        event_type: selectedRecommendation.type === "event" ? selectedRecommendation.data?.event_type : "문화공간",
-        description: selectedRecommendation.data?.program_description || selectedRecommendation.data?.description,
-      });
+      };
+
+      // Add location and description if it's from cultural data
+      if (selectedRecommendation.location) {
+        scheduleData.location = selectedRecommendation.location;
+      }
+      if (selectedRecommendation.type === "event") {
+        scheduleData.event_type = selectedRecommendation.data?.event_type;
+        scheduleData.description = selectedRecommendation.data?.program_description;
+      } else if (selectedRecommendation.type === "space") {
+        scheduleData.event_type = "문화공간";
+        scheduleData.description = selectedRecommendation.data?.description;
+      } else if (selectedRecommendation.description) {
+        // AI generated recommendation
+        scheduleData.description = selectedRecommendation.description;
+      }
+
+      const { error } = await supabase.from("schedules").insert(scheduleData);
 
       if (error) throw error;
 
@@ -350,25 +333,15 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
   };
 
   const isEventWithFixedTime = () => {
-    return (
-      selectedRecommendation?.type === "event" &&
-      selectedRecommendation?.data?.start_date
-    );
+    return false; // AI recommendations don't have fixed times
   };
 
   const getFixedEventDate = () => {
-    if (!isEventWithFixedTime()) return "";
-    const startDate = new Date(selectedRecommendation.data.start_date);
-    return toLocalDateString(startDate);
+    return "";
   };
 
   const getFixedEventTime = () => {
-    if (!isEventWithFixedTime()) return "";
-    const eventTime = selectedRecommendation.data.event_time;
-    if (!eventTime) return "";
-    // event_time이 "14:00~16:00" 같은 형식일 수 있으므로 시작 시간만 추출
-    const match = eventTime.match(/(\d{1,2}):(\d{2})/);
-    return match ? `${match[1].padStart(2, "0")}:${match[2]}` : "";
+    return "";
   };
 
   const prevMonth = () => {
@@ -532,65 +505,79 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
         )}
       </section>
 
-      {/* Recommendations */}
+      {/* AI Activity Recommendations */}
       <section className="max-w-2xl mx-auto w-full pb-6">
         <div className="flex items-center gap-2 mb-4">
           <h2 className="text-senior-xl font-bold text-secondary-foreground">오늘 뭐 할까요?</h2>
         </div>
 
-        {recommendations.length === 0 ? (
-          <div className="bg-card/80 backdrop-blur-sm rounded-2xl p-6 text-center border border-border/50">
-            <p className="text-senior-base text-muted-foreground">추천 정보를 불러오는 중...</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {recommendations.map((rec) => (
-              <div
-                key={rec.id}
-                className="bg-card/90 backdrop-blur-sm rounded-2xl p-4 border border-border/50 flex items-center gap-4"
-              >
-                <div className="text-3xl flex-shrink-0">{rec.image}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-senior-lg font-semibold text-foreground truncate">{rec.title}</p>
-                  <p className="text-senior-sm text-muted-foreground flex items-center gap-1">
-                    <MapPin size={16} className="flex-shrink-0" />
-                    <span className="truncate">{rec.location}</span>
-                  </p>
-                  {rec.data?.is_free !== undefined && (
-                    <span className="text-senior-xs text-primary mt-1 inline-block">
-                      {rec.data.is_free ? "무료" : "유료"}
-                    </span>
-                  )}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
+        <div className="bg-gradient-to-br from-card/90 to-card/60 backdrop-blur-sm rounded-2xl p-6 border border-border/50 shadow-sm">
+          {isLoadingRecommendation ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <span className="ml-3 text-senior-base text-muted-foreground">추천을 불러오는 중...</span>
+            </div>
+          ) : parsedRecommendations.length > 0 ? (
+            <div className="space-y-3">
+              {parsedRecommendations.map((rec, index) => (
+                <Card
+                  key={index}
+                  className="p-4 hover:shadow-md transition-all cursor-pointer border-2 hover:border-primary/50"
                   onClick={() => {
-                    setSelectedRecommendation(rec);
-                    // 고정된 시간이 있는 이벤트는 날짜/시간 자동 설정
-                    if (rec.type === "event" && rec.data?.start_date) {
-                      const startDate = new Date(rec.data.start_date);
-                      setAddScheduleDate(toLocalDateString(startDate));
-                      const eventTime = rec.data.event_time;
-                      if (eventTime) {
-                        const match = eventTime.match(/(\d{1,2}):(\d{2})/);
-                        if (match) {
-                          setAddScheduleTime(`${match[1].padStart(2, "0")}:${match[2]}`);
-                        }
-                      }
-                    } else {
-                      setAddScheduleDate(toLocalDateString(new Date()));
-                      setAddScheduleTime("");
-                    }
+                    setSelectedRecommendation({
+                      title: rec.title,
+                      description: rec.description,
+                      type: 'ai'
+                    });
+                    setAddScheduleDate(toLocalDateString(new Date()));
+                    setAddScheduleTime("");
                   }}
-                  className="flex-shrink-0"
                 >
-                  일정 추가
-                </Button>
-              </div>
-            ))}
-          </div>
-        )}
+                  <div className="flex items-start gap-3">
+                    <div className="text-3xl flex-shrink-0">✨</div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-senior-lg font-semibold text-foreground mb-1">{rec.title}</h3>
+                      <p className="text-senior-sm text-muted-foreground leading-relaxed">{rec.description}</p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-shrink-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedRecommendation({
+                          title: rec.title,
+                          description: rec.description,
+                          type: 'ai'
+                        });
+                        setAddScheduleDate(toLocalDateString(new Date()));
+                        setAddScheduleTime("");
+                      }}
+                    >
+                      일정 추가
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+              <Button
+                onClick={fetchAIRecommendation}
+                variant="outline"
+                className="w-full mt-4"
+              >
+                다른 추천 보기
+              </Button>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-senior-base text-muted-foreground mb-4">
+                오늘 하루를 즐겁게 보낼 수 있는 활동을 추천해드릴게요
+              </p>
+              <Button onClick={fetchAIRecommendation} variant="default">
+                추천 받기
+              </Button>
+            </div>
+          )}
+        </div>
       </section>
 
       {/* Add to Schedule Dialog */}
@@ -603,11 +590,6 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
             <DialogTitle className="text-senior-xl">일정 추가</DialogTitle>
             <DialogDescription className="text-senior-base">
               {selectedRecommendation?.title}을(를) 일정에 추가합니다
-              {isEventWithFixedTime() && (
-                <span className="block mt-2 text-senior-sm text-muted-foreground">
-                  ⏰ 이 행사는 시간이 정해져 있어요
-                </span>
-              )}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-4">
@@ -621,12 +603,11 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
                 className="h-14 text-senior-base px-4"
                 value={addScheduleDate}
                 onChange={(e) => setAddScheduleDate(e.target.value)}
-                disabled={isEventWithFixedTime()}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="schedule-time" className="text-senior-lg">
-                시간 {!isEventWithFixedTime() && "(선택)"}
+                시간 (선택)
               </Label>
               <Input
                 id="schedule-time"
@@ -634,7 +615,6 @@ export default function ScheduleCalendar({ onEditSchedule }: ScheduleCalendarPro
                 className="h-14 text-senior-base px-4"
                 value={addScheduleTime}
                 onChange={(e) => setAddScheduleTime(e.target.value)}
-                disabled={isEventWithFixedTime()}
               />
             </div>
             <Button
